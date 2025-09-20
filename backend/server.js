@@ -80,6 +80,92 @@ app.get("/recipes", async (req, res) => {
   }
 });
 
+// GET /recipes/:id - ambil resep berdasarkan id
+app.get("/recipes/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query("SELECT * FROM recipes WHERE id = $1", [
+      id,
+    ]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Resep tidak ditemukan" });
+    }
+
+    const recipe = result.rows[0];
+    res.json({
+      id: recipe.id,
+      name: recipe.name,
+      steps: recipe.steps, // sudah tersimpan JSON di DB
+      createdAt: recipe.created_at,
+    });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "gagal mengambil data dari database" });
+  }
+});
+
+// PUT /recipes/:id - update resep berdasarkan id
+app.put("/recipes/:id", async (req, res) => {
+  const { id } = req.params;
+  const { recipe, steps } = req.body;
+
+  if (!recipe && !steps) {
+    return res
+      .status(400)
+      .json({ error: "Minimal harus ada recipe atau steps untuk update" });
+  }
+
+  try {
+    const result = await pool.query("SELECT * FROM recipes WHERE id = $1", [
+      id,
+    ]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Resep tidak ditemukan" });
+    }
+
+    const updatedRecipe = {
+      id: id,
+      name: recipe || result.rows[0].name,
+      steps: steps || result.rows[0].steps,
+      createdAt: result.rows[0].created_at,
+    };
+
+    await pool.query("UPDATE recipes SET name = $1, steps = $2 WHERE id = $3", [
+      updatedRecipe.name,
+      JSON.stringify(updatedRecipe.steps),
+      id,
+    ]);
+
+    res.json(updatedRecipe);
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "gagal update data di database" });
+  }
+});
+
+
+// DELETE /recipes/:id - hapus resep berdasarkan id
+app.delete("/recipes/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      "DELETE FROM recipes WHERE id = $1 RETURNING *",
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Resep tidak ditemukan" });
+    }
+
+    res.json({ message: "Resep berhasil dihapus", deleted: result.rows[0] });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "gagal menghapus data dari database" });
+  }
+});
+
 // MQTT connect
 const mqttClient = mqtt.connect(process.env.MQTT_URL, {
   username: process.env.MQTT_USERNAME,
