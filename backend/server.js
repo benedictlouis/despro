@@ -18,27 +18,49 @@ const { v4: uuidv4 } = require("uuid");
 
 // POST /recipes - simpan resep baru
 app.post("/recipes", async (req, res) => {
-  const { recipe, steps } = req.body;
+  const { name, steps } = req.body;
 
-  if (!recipe || !steps) {
-    return res.status(400).json({ error: "recipe dan steps wajib diisi" });
+  if (!name || !steps) {
+    return res.status(400).json({
+      error: "name dan steps wajib diisi",
+    });
   }
 
-  // Data resep
+  if (!Array.isArray(steps) || steps.length === 0) {
+    return res.status(400).json({
+      error: "steps harus berupa array dan tidak boleh kosong",
+    });
+  }
+
+  // VALIDASI isi tiap step
+  for (let i = 0; i < steps.length; i++) {
+    const s = steps[i];
+
+    if (
+      s.step === undefined ||
+      s.action === undefined ||
+      s.temperature === undefined ||
+      s.weight === undefined ||
+      s.time === undefined ||
+      s.motor === undefined
+    ) {
+      return res.status(400).json({
+        error: `Step ke-${
+          i + 1
+        } tidak lengkap. Semua field (step, action, temperature, weight, time, motor) wajib ada.`,
+        step_error: s,
+      });
+    }
+  }
+
   const newRecipe = {
     id: uuidv4(),
-    name: recipe,
-    steps: steps,
+    name,
+    steps,
     createdAt: new Date().toISOString(),
   };
 
-  // Kalau masih pakai file JSON (lowdb)
-  // db.data.recipes.push(newRecipe);
-  // await db.write();
-
-  // Kalau pakai PostgreSQL (connection.js)
   try {
-    const pool = require("./connection");
     await pool.query(
       "INSERT INTO recipes (id, name, steps, created_at) VALUES ($1, $2, $3, $4)",
       [
@@ -48,28 +70,23 @@ app.post("/recipes", async (req, res) => {
         newRecipe.createdAt,
       ]
     );
+
     res.status(201).json(newRecipe);
   } catch (err) {
-    console.error(err);
+    console.error("Insert error:", err);
     res.status(500).json({ error: "gagal simpan ke database" });
   }
 });
 
-// REST endpoint simple
-app.get("/health", (req, res) => {
-  res.json({ ok: true, time: new Date().toISOString() });
-});
-
-// GET /recipes - ambil semua resep
+// GET /recipes - get all recipes
 app.get("/recipes", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM recipes");
 
-    // Kalau kolom steps sudah berupa JSON/JSONB, tidak perlu di-parse lagi
     const recipes = result.rows.map((r) => ({
       id: r.id,
       name: r.name,
-      steps: r.steps, // langsung pakai
+      steps: r.steps,
       createdAt: r.created_at,
     }));
 
@@ -80,9 +97,10 @@ app.get("/recipes", async (req, res) => {
   }
 });
 
-// GET /recipes/:id - ambil resep berdasarkan id
+// GET /recipes/:id - get recipe by id
 app.get("/recipes/:id", async (req, res) => {
   const { id } = req.params;
+
   try {
     const result = await pool.query("SELECT * FROM recipes WHERE id = $1", [
       id,
@@ -92,12 +110,13 @@ app.get("/recipes/:id", async (req, res) => {
       return res.status(404).json({ error: "Resep tidak ditemukan" });
     }
 
-    const recipe = result.rows[0];
+    const r = result.rows[0];
+
     res.json({
-      id: recipe.id,
-      name: recipe.name,
-      steps: recipe.steps, // sudah tersimpan JSON di DB
-      createdAt: recipe.created_at,
+      id: r.id,
+      name: r.name,
+      steps: r.steps,
+      createdAt: r.created_at,
     });
   } catch (err) {
     console.error("Database error:", err);
@@ -105,30 +124,33 @@ app.get("/recipes/:id", async (req, res) => {
   }
 });
 
-// PUT /recipes/:id - update resep berdasarkan id
+// PUT /recipes/:id - update resep
 app.put("/recipes/:id", async (req, res) => {
   const { id } = req.params;
-  const { recipe, steps } = req.body;
+  const { name, steps } = req.body;
 
-  if (!recipe && !steps) {
-    return res
-      .status(400)
-      .json({ error: "Minimal harus ada recipe atau steps untuk update" });
+  if (!name && !steps) {
+    return res.status(400).json({
+      error: "Minimal harus ada name atau steps untuk update",
+    });
   }
 
   try {
     const result = await pool.query("SELECT * FROM recipes WHERE id = $1", [
       id,
     ]);
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Resep tidak ditemukan" });
     }
 
+    const existing = result.rows[0];
+
     const updatedRecipe = {
-      id: id,
-      name: recipe || result.rows[0].name,
-      steps: steps || result.rows[0].steps,
-      createdAt: result.rows[0].created_at,
+      id,
+      name: name || existing.name,
+      steps: steps || existing.steps,
+      createdAt: existing.created_at,
     };
 
     await pool.query("UPDATE recipes SET name = $1, steps = $2 WHERE id = $3", [
@@ -144,8 +166,7 @@ app.put("/recipes/:id", async (req, res) => {
   }
 });
 
-
-// DELETE /recipes/:id - hapus resep berdasarkan id
+// DELETE /recipes/:id - hapus resep
 app.delete("/recipes/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -159,7 +180,10 @@ app.delete("/recipes/:id", async (req, res) => {
       return res.status(404).json({ error: "Resep tidak ditemukan" });
     }
 
-    res.json({ message: "Resep berhasil dihapus", deleted: result.rows[0] });
+    res.json({
+      message: "Resep berhasil dihapus",
+      deleted: result.rows[0],
+    });
   } catch (err) {
     console.error("Database error:", err);
     res.status(500).json({ error: "gagal menghapus data dari database" });
