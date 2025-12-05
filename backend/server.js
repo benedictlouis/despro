@@ -300,6 +300,20 @@ app.delete("/recipes/:id", async (req, res) => {
   }
 });
 
+//API for create user
+app.post("/users", async (req, res) => {
+  const { username, password } = req.body;
+
+  const hashed = await bcrypt.hash(password, 10);
+
+  await pool.query(
+    "INSERT INTO users (username, password, role) VALUES ($1,$2,'user')",
+    [username, hashed]
+  );
+
+  res.json({ message: "User created" });
+});
+
 
 // Health check endpoint
 app.get("/health", (req, res) => {
