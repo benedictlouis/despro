@@ -11,11 +11,12 @@ const PORT = process.env.PORT || 4321;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // MQTT Configuration
 // Default broker changed to mqtt.nomaden.cloud per request
-const mqttUrl = process.env.MQTT_URL || 'mqtt://mqtt.nomaden.cloud:1883';
-const baseTopic = process.env.MQTT_BASE_TOPIC || 'kitchen';
+const mqttUrl = process.env.MQTT_URL || "mqtt://mqtt.nomaden.cloud:1883";
+const baseTopic = process.env.MQTT_BASE_TOPIC || "sajipati";
 const client = mqtt.connect(mqttUrl);
 
 client.on("connect", () => {
@@ -167,6 +168,31 @@ app.post("/recipes", async (req, res) => {
   }
 });
 
+//API for create user
+app.post("/users", async (req, res) => {
+  try {
+    console.log("REQ BODY:", req.body);
+
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res
+        .status(400)
+        .json({ error: "username dan password wajib diisi" });
+    }
+
+    await pool.query(
+      "INSERT INTO users (username, password, role) VALUES ($1, $2, 'user')",
+      [username, password]
+    );
+
+    res.json({ message: "User created" });
+  } catch (err) {
+    console.error("Error creating user:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Get single recipe with formatted steps (ensure stove_on present)
 app.get("/recipe/:id", async (req, res) => {
   try {
@@ -281,7 +307,9 @@ app.delete("/recipes/:id", async (req, res) => {
     const { id } = req.params;
 
     // Check if recipe exists
-    const check = await pool.query("SELECT id FROM recipes WHERE id = $1", [id]);
+    const check = await pool.query("SELECT id FROM recipes WHERE id = $1", [
+      id,
+    ]);
 
     if (check.rows.length === 0) {
       return res.status(404).json({ error: "Recipe not found" });
@@ -299,21 +327,6 @@ app.delete("/recipes/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete recipe" });
   }
 });
-
-//API for create user
-app.post("/users", async (req, res) => {
-  const { username, password } = req.body;
-
-  const hashed = await bcrypt.hash(password, 10);
-
-  await pool.query(
-    "INSERT INTO users (username, password, role) VALUES ($1,$2,'user')",
-    [username, hashed]
-  );
-
-  res.json({ message: "User created" });
-});
-
 
 // Health check endpoint
 app.get("/health", (req, res) => {
