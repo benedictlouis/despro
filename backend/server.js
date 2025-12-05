@@ -14,7 +14,7 @@ app.use(express.json());
 // MQTT Configuration
 // Default broker changed to mqtt.nomaden.cloud per request
 const mqttUrl = process.env.MQTT_URL || 'mqtt://mqtt.nomaden.cloud:1883';
-const baseTopic = process.env.MQTT_BASE_TOPIC || 'sajipati';
+const baseTopic = process.env.MQTT_BASE_TOPIC || 'kitchen';
 const client = mqtt.connect(mqttUrl);
 
 client.on('connect', () => {
