@@ -15,7 +15,7 @@ import {
   IconButton,
   CircularProgress
 } from '@mui/material';
-import { Close as CloseIcon, PlayArrow as PlayIcon } from '@mui/icons-material';
+import { Close as CloseIcon, PlayArrow as PlayIcon, Delete as DeleteIcon } from '@mui/icons-material';
 
 const API_BASE_URL = "http://localhost:4321";
 
@@ -40,9 +40,10 @@ interface Recipe {
 interface RecipeCardProps {
   recipe: Recipe;
   onSendToESP32: (recipeId: string) => void;
+  onDelete: (recipeId: string, recipeName: string) => void;
 }
 
-export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
+export default function RecipeCard({ recipe, onSendToESP32, onDelete }: RecipeCardProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [detailedSteps, setDetailedSteps] = useState<RecipeStep[]>([]);
@@ -81,6 +82,11 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
     handleClose();
   };
 
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(recipe.id, recipe.name);
+  };
+
   const formatStepDetails = (step: RecipeStep) => {
     const details = [];
     if (step.ingredient) details.push(`Ingredient: ${step.ingredient}`);
@@ -107,7 +113,7 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
         onClick={handleCardClick}
       >
         <CardContent>
-          <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+          <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
             <Box flex={1}>
               <Typography variant="h6" component="h2" gutterBottom>
                 {recipe.name}
@@ -118,11 +124,24 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
                 </Typography>
               )}
             </Box>
+            <IconButton
+              onClick={handleDelete}
+              color="error"
+              size="small"
+              sx={{ ml: 1 }}
+              aria-label="delete recipe"
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Box>
+          
+          <Box display="flex" gap={1}>
             <Button
               variant="contained"
               color="primary"
               size="small"
               startIcon={<PlayIcon />}
+              fullWidth
               onClick={(e) => {
                 e.stopPropagation();
                 onSendToESP32(recipe.id);

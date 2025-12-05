@@ -15,7 +15,8 @@ import {
   CircularProgress,
   FormControlLabel,
   Switch,
-  Chip
+  Chip,
+  Snackbar
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import RecipeCard from '../components/RecipeCard';
@@ -46,6 +47,20 @@ export default function RecipePage() {
   const [steps, setSteps] = useState<RecipeStep[]>([
     { action: '', temperature: 0, weight: 0, time: 0, motor: false, stove_on: 'off' }
   ]);
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    recipeId: string | null;
+    recipeName: string;
+  }>({
+    open: false,
+    recipeId: null,
+    recipeName: ''
+  });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error'
+  });
 
   const actionOptions = [
     'turn_on', 'turn_off', 'wait', 'stir', 'crack', 'fry', 
@@ -82,15 +97,74 @@ export default function RecipePage() {
       
       if (response.ok) {
         const result = await response.json();
-        alert(`Recipe "${result.recipe_name}" sent to ESP32 successfully!`);
+        setSnackbar({
+          open: true,
+          message: `Recipe "${result.recipe_name}" sent to ESP32 successfully!`,
+          severity: 'success'
+        });
       } else {
         const error = await response.json();
-        alert(`Failed to send recipe: ${error.error}`);
+        setSnackbar({
+          open: true,
+          message: `Failed to send recipe: ${error.error}`,
+          severity: 'error'
+        });
       }
     } catch (error) {
       console.error('Error sending recipe to ESP32:', error);
-      alert('Error sending recipe to ESP32');
+      setSnackbar({
+        open: true,
+        message: 'Error sending recipe to ESP32',
+        severity: 'error'
+      });
     }
+  };
+
+  const handleDeleteClick = (recipeId: string, recipeName: string) => {
+    setDeleteDialog({
+      open: true,
+      recipeId,
+      recipeName
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteDialog.recipeId) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/recipes/${deleteDialog.recipeId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setSnackbar({
+          open: true,
+          message: `Recipe "${deleteDialog.recipeName}" deleted successfully!`,
+          severity: 'success'
+        });
+        fetchRecipes();
+      } else {
+        const error = await response.json();
+        setSnackbar({
+          open: true,
+          message: error.error || 'Failed to delete recipe',
+          severity: 'error'
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting recipe:', error);
+      setSnackbar({
+        open: true,
+        message: 'Error deleting recipe',
+        severity: 'error'
+      });
+    } finally {
+      setDeleteDialog({ open: false, recipeId: null, recipeName: '' });
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialog({ open: false, recipeId: null, recipeName: '' });
   };
 
   const handleAddStep = () => {
@@ -126,12 +200,26 @@ export default function RecipePage() {
         setOpenDialog(false);
         setRecipeName('');
         setSteps([{ action: '', temperature: 0, weight: 0, time: 0, motor: false, stove_on: 'off' }]);
+        setSnackbar({
+          open: true,
+          message: 'Recipe created successfully!',
+          severity: 'success'
+        });
         fetchRecipes();
       } else {
-        console.error('Failed to create recipe');
+        setSnackbar({
+          open: true,
+          message: 'Failed to create recipe',
+          severity: 'error'
+        });
       }
     } catch (error) {
       console.error('Error creating recipe:', error);
+      setSnackbar({
+        open: true,
+        message: 'Error creating recipe',
+        severity: 'error'
+      });
     }
   };
 
@@ -177,6 +265,7 @@ export default function RecipePage() {
               <RecipeCard
                 recipe={recipe}
                 onSendToESP32={sendToESP32}
+                onDelete={handleDeleteClick}
               />
             </Box>
           ))}
@@ -239,9 +328,6 @@ export default function RecipePage() {
                   value={step.action}
                   onChange={(e) => handleStepChange(index, 'action', e.target.value)}
                   required
-                  SelectProps={{
-                    displayEmpty: true,
-                  }}
                 >
                   {actionOptions.map((option) => (
                     <MenuItem key={option} value={option}>
@@ -304,7 +390,6 @@ export default function RecipePage() {
                     </Typography>
                   }
                 />
-
                 <FormControlLabel
                   control={
                     <Switch
@@ -346,6 +431,40 @@ export default function RecipePage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialog.open} onClose={handleDeleteCancel}>
+        <DialogTitle>Delete Recipe</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete "<strong>{deleteDialog.recipeName}</strong>"?
+            <br />
+            This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar Notification */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }
