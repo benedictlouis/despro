@@ -34,6 +34,7 @@ import {
 
 const API_BASE_URL = "http://localhost:4321";
 
+// Sample data - replace with real API calls
 const recipeUsageData = [
   { name: 'Nasi Goreng', count: 45, color: '#8884d8' },
   { name: 'Ayam Bakar', count: 32, color: '#82ca9d' },
@@ -94,23 +95,46 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
-    // Simulate API call for dashboard stats
-    const fetchStats = async () => {
-      setLoading(true);
-      // Simulate loading
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    setLoading(true);
+    try {
+      // Fetch total recipes from API
+      const response = await fetch(`${API_BASE_URL}/recipes`);
+      if (response.ok) {
+        const recipes = await response.json();
+        
+        setStats({
+          totalRecipes: recipes.length, // Get actual count from API
+          activeDevices: 3,
+          todaysCookings: 25,
+          successRate: 92.5
+        });
+      } else {
+        console.error('Failed to fetch recipes');
+        // Fallback to default values
+        setStats({
+          totalRecipes: 0,
+          activeDevices: 3,
+          todaysCookings: 25,
+          successRate: 92.5
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      // Fallback to default values
       setStats({
-        totalRecipes: 47,
+        totalRecipes: 0,
         activeDevices: 3,
         todaysCookings: 25,
         successRate: 92.5
       });
+    } finally {
       setLoading(false);
-    };
-
-    fetchStats();
-  }, []);
+    }
+  };
 
   const handleSendMenuToMQTT = async () => {
     setSendingMenu(true);
@@ -130,6 +154,8 @@ export default function DashboardPage() {
           message: `Successfully sent ${data.total} recipes to MQTT broker!`,
           severity: 'success'
         });
+        // Refresh stats after sending menu
+        fetchStats();
       } else {
         setSnackbar({
           open: true,
@@ -219,7 +245,7 @@ export default function DashboardPage() {
             fontWeight: 'bold'
           }}
         >
-          {sendingMenu ? 'Sending...' : 'Send Menu to Hardware'}
+          {sendingMenu ? 'Sending...' : 'Send Menu'}
         </Button>
       </Box>
 
@@ -260,33 +286,41 @@ export default function DashboardPage() {
         </Box>
       </Box>
 
-      {/* Menu Sync Card */}
-      <Box mb={4}>
-        <Card sx={{ backgroundColor: '#e3f2fd' }}>
-          <CardContent>
-            <Box display="flex" alignItems="center" justifyContent="space-between">
-              <Box display="flex" alignItems="center" gap={2}>
-                <RestaurantIcon sx={{ fontSize: 40, color: '#1976d2' }} />
-                <Box>
-                  <Typography variant="h6" color="primary">
-                    Send all menu
-                  </Typography>
-                </Box>
-              </Box>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={sendingMenu ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
-                onClick={handleSendMenuToMQTT}
-                disabled={sendingMenu}
-                size="large"
-              >
-                {sendingMenu ? 'Sending...' : 'Send'}
-              </Button>
-            </Box>
-          </CardContent>
-        </Card>
+     {/*
+<Box mb={4}>
+  <Card sx={{ backgroundColor: '#e3f2fd' }}>
+    <CardContent>
+      <Box display="flex" alignItems="center" justifyContent="space-between">
+        <Box display="flex" alignItems="center" gap={2}>
+          <RestaurantIcon sx={{ fontSize: 40, color: '#1976d2' }} />
+          <Box>
+            <Typography variant="h6" color="primary">
+              Send all menu
+            </Typography>
+          </Box>
+        </Box>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={
+            sendingMenu ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              <SendIcon />
+            )
+          }
+          onClick={handleSendMenuToMQTT}
+          disabled={sendingMenu}
+          size="large"
+        >
+          {sendingMenu ? 'Sending...' : 'Send'}
+        </Button>
       </Box>
+    </CardContent>
+  </Card>
+</Box>
+*/}
+
 
       {/* Charts Row 1 */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>

@@ -61,13 +61,11 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
         setDetailedSteps(data.steps || []);
       } else {
         console.error('Failed to fetch recipe details');
-        // Fallback to parsing existing steps
-        setDetailedSteps(parseSteps());
+        setDetailedSteps([]);
       }
     } catch (error) {
       console.error('Error fetching recipe details:', error);
-      // Fallback to parsing existing steps
-      setDetailedSteps(parseSteps());
+      setDetailedSteps([]);
     } finally {
       setLoading(false);
     }
@@ -94,25 +92,6 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
     return details.join(' | ');
   };
 
-  // Parse steps if it's a string (fallback)
-  const parseSteps = (): RecipeStep[] => {
-    if (!recipe.steps) return [];
-    
-    if (typeof recipe.steps === 'string') {
-      try {
-        const parsed = JSON.parse(recipe.steps);
-        return Array.isArray(parsed) ? parsed : [];
-      } catch (e) {
-        console.error('Failed to parse steps:', e);
-        return [];
-      }
-    }
-    
-    return Array.isArray(recipe.steps) ? recipe.steps : [];
-  };
-
-  const steps = parseSteps();
-
   return (
     <>
       <Card 
@@ -132,9 +111,6 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
             <Box flex={1}>
               <Typography variant="h6" component="h2" gutterBottom>
                 {recipe.name}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {steps.length} step{steps.length !== 1 ? 's' : ''}
               </Typography>
               {recipe.createdAt && (
                 <Typography variant="caption" color="text.secondary">
