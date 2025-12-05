@@ -13,7 +13,7 @@ import {
   Alert,
   Snackbar
 } from '@mui/material';
-import { Send as SendIcon, Restaurant as RestaurantIcon } from '@mui/icons-material';
+import { Send as SendIcon } from '@mui/icons-material';
 import '../styles/dashboard.css';
 import {
   BarChart,
@@ -31,8 +31,9 @@ import {
   Area,
   AreaChart
 } from 'recharts';
+import config from '../utils/config';
 
-const API_BASE_URL = "http://localhost:4321";
+const API_BASE_URL = config.API_BASE_URL;
 
 // Sample data - replace with real API calls
 const recipeUsageData = [

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+// import * as config from ""
 import { 
   Card, 
   CardContent, 
@@ -16,8 +17,9 @@ import {
   CircularProgress
 } from '@mui/material';
 import { Close as CloseIcon, PlayArrow as PlayIcon } from '@mui/icons-material';
+import config from '../utils/config';
 
-const API_BASE_URL = "http://localhost:4321";
+const API_BASE_URL = config.API_BASE_URL;
 
 interface RecipeStep {
   step?: number;
