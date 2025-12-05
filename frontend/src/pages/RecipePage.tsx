@@ -12,16 +12,21 @@ import {
   MenuItem,
   IconButton,
   Alert,
-  CircularProgress
+  CircularProgress,
+  FormControlLabel,
+  Switch,
+  Chip
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import RecipeCard from '../components/RecipeCard';
 
 interface RecipeStep {
   action: string;
-  time?: number;
-  ingredient?: string;
-  temperature?: number;
+  temperature: number;
+  weight: number;
+  time: number;
+  motor: boolean;
+  stove_on: string;
 }
 
 interface Recipe {
@@ -39,7 +44,7 @@ export default function RecipePage() {
   const [openDialog, setOpenDialog] = useState(false);
   const [recipeName, setRecipeName] = useState('');
   const [steps, setSteps] = useState<RecipeStep[]>([
-    { action: '', time: 0, ingredient: '', temperature: 0 }
+    { action: '', temperature: 0, weight: 0, time: 0, motor: false, stove_on: 'off' }
   ]);
 
   const actionOptions = [
@@ -89,7 +94,7 @@ export default function RecipePage() {
   };
 
   const handleAddStep = () => {
-    setSteps([...steps, { action: '', time: 0, ingredient: '', temperature: 0 }]);
+    setSteps([...steps, { action: '', temperature: 0, weight: 0, time: 0, motor: false, stove_on: 'off' }]);
   };
 
   const handleRemoveStep = (index: number) => {
@@ -98,7 +103,7 @@ export default function RecipePage() {
     }
   };
 
-  const handleStepChange = (index: number, field: keyof RecipeStep, value: string | number) => {
+  const handleStepChange = (index: number, field: keyof RecipeStep, value: string | number | boolean) => {
     const newSteps = [...steps];
     newSteps[index] = { ...newSteps[index], [field]: value };
     setSteps(newSteps);
@@ -120,7 +125,7 @@ export default function RecipePage() {
       if (response.ok) {
         setOpenDialog(false);
         setRecipeName('');
-        setSteps([{ action: '', time: 0, ingredient: '', temperature: 0 }]);
+        setSteps([{ action: '', temperature: 0, weight: 0, time: 0, motor: false, stove_on: 'off' }]);
         fetchRecipes();
       } else {
         console.error('Failed to create recipe');
@@ -190,7 +195,7 @@ export default function RecipePage() {
             variant="outlined"
             value={recipeName}
             onChange={(e) => setRecipeName(e.target.value)}
-            sx={{ mb: 3 }}
+            sx={{ mb: 3, mt: 1 }}
           />
 
           <Typography variant="h6" gutterBottom>
@@ -198,11 +203,22 @@ export default function RecipePage() {
           </Typography>
 
           {steps.map((step, index) => (
-            <Box key={index} sx={{ mb: 2, p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
-              <Box display="flex" alignItems="center" mb={2}>
-                <Typography variant="subtitle1" sx={{ mr: 2 }}>
-                  Step {index + 1}
-                </Typography>
+            <Box 
+              key={index} 
+              sx={{ 
+                mb: 2, 
+                p: 2, 
+                backgroundColor: '#f5f5f5',
+                borderRadius: 1,
+                border: '1px solid #ddd'
+              }}
+            >
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                <Chip 
+                  label={`Step ${index + 1}`} 
+                  color="primary"
+                  sx={{ fontWeight: 'bold' }}
+                />
                 {steps.length > 1 && (
                   <IconButton 
                     onClick={() => handleRemoveStep(index)}
@@ -214,51 +230,95 @@ export default function RecipePage() {
                 )}
               </Box>
 
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
-                  <TextField
-                    select
-                    label="Action"
-                    fullWidth
-                    value={step.action}
-                    onChange={(e) => handleStepChange(index, 'action', e.target.value)}
-                  >
-                    {actionOptions.map((option) => (
-                      <MenuItem key={option} value={option}>
-                        {option.replace(/_/g, ' ')}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Box>
+              {/* Row 1: Action */}
+              <Box sx={{ mb: 2 }}>
+                <TextField
+                  select
+                  label="Action *"
+                  fullWidth
+                  value={step.action}
+                  onChange={(e) => handleStepChange(index, 'action', e.target.value)}
+                  required
+                  SelectProps={{
+                    displayEmpty: true,
+                  }}
+                >
+                  {actionOptions.map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {option.replace(/_/g, ' ').toUpperCase()}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Box>
 
-                <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
-                  <TextField
-                    label="Time (seconds)"
-                    type="number"
-                    fullWidth
-                    value={step.time || ''}
-                    onChange={(e) => handleStepChange(index, 'time', parseInt(e.target.value) || 0)}
-                  />
-                </Box>
-
-                <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
-                  <TextField
-                    label="Ingredient"
-                    fullWidth
-                    value={step.ingredient || ''}
-                    onChange={(e) => handleStepChange(index, 'ingredient', e.target.value)}
-                  />
-                </Box>
-
-                <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
+              {/* Row 2: Temperature and Weight */}
+              <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+                <Box sx={{ flex: '1 1 45%', minWidth: '200px' }}>
                   <TextField
                     label="Temperature (°C)"
                     type="number"
                     fullWidth
-                    value={step.temperature || ''}
+                    value={step.temperature}
                     onChange={(e) => handleStepChange(index, 'temperature', parseInt(e.target.value) || 0)}
+                    inputProps={{ min: 0 }}
                   />
                 </Box>
+
+                <Box sx={{ flex: '1 1 45%', minWidth: '200px' }}>
+                  <TextField
+                    label="Weight (g)"
+                    type="number"
+                    fullWidth
+                    value={step.weight}
+                    onChange={(e) => handleStepChange(index, 'weight', parseInt(e.target.value) || 0)}
+                    inputProps={{ min: 0 }}
+                  />
+                </Box>
+              </Box>
+
+              {/* Row 3: Time */}
+              <Box sx={{ mb: 2 }}>
+                <TextField
+                  label="Time (seconds)"
+                  type="number"
+                  fullWidth
+                  value={step.time}
+                  onChange={(e) => handleStepChange(index, 'time', parseInt(e.target.value) || 0)}
+                  inputProps={{ min: 0 }}
+                />
+              </Box>
+
+              {/* Row 4: Motor and Stove Switches */}
+              <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={step.motor}
+                      onChange={(e) => handleStepChange(index, 'motor', e.target.checked)}
+                      color="primary"
+                    />
+                  }
+                  label={
+                    <Typography variant="body1">
+                      Motor: <strong>{step.motor ? 'ON' : 'OFF'}</strong>
+                    </Typography>
+                  }
+                />
+
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={step.stove_on === 'on'}
+                      onChange={(e) => handleStepChange(index, 'stove_on', e.target.checked ? 'on' : 'off')}
+                      color="primary"
+                    />
+                  }
+                  label={
+                    <Typography variant="body1">
+                      Stove: <strong>{step.stove_on === 'on' ? 'ON' : 'OFF'}</strong>
+                    </Typography>
+                  }
+                />
               </Box>
             </Box>
           ))}
@@ -267,7 +327,7 @@ export default function RecipePage() {
             onClick={handleAddStep}
             startIcon={<AddIcon />}
             variant="outlined"
-            sx={{ mb: 3 }}
+            sx={{ mt: 1 }}
           >
             Add Step
           </Button>

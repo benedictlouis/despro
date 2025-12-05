@@ -33,8 +33,9 @@ export default function RecipeForm() {
   const [message, setMessage] = useState("");
   const [showMessage, setShowMessage] = useState(false);
 
-  const API_BASE_URL = "http://localhost:4321"; 
-  
+  const API_BASE_URL = "http://localhost:4321"; // Sesuaikan dengan port backend Anda
+
+  // Load recipes dari backend saat component mount
   useEffect(() => {
     fetchRecipes();
   }, []);
