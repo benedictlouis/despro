@@ -1,119 +1,117 @@
-import { useState } from 'react';
-import { Box, TextField, Button, Typography, Checkbox, FormControlLabel } from '@mui/material';
-import { styled } from '@mui/material/styles';
-
-const Logo = styled(Typography)({
-  color: '#ffffff',
-  fontSize: '36px',
-  fontWeight: 'bold',
-  marginBottom: '40px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '8px',
-});
-
-const StyledTextField = styled(TextField)({
-  marginBottom: '20px',
-  '& .MuiOutlinedInput-root': {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: '4px',
-    '& fieldset': {
-      borderColor: 'rgba(255, 255, 255, 0.2)',
-    },
-    '&:hover fieldset': {
-      borderColor: 'rgba(255, 255, 255, 0.3)',
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: '#00A4DC',
-    },
-  },
-  '& .MuiInputLabel-root': {
-    color: 'rgba(255, 255, 255, 0.7)',
-  },
-  '& .MuiOutlinedInput-input': {
-    color: 'white',
-  },
-});
-
-const SignInButton = styled(Button)({
-  backgroundColor: '#00A4DC',
-  color: 'white',
-  padding: '12px 0',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  borderRadius: '4px',
-  marginBottom: '30px',
-  '&:hover': {
-    backgroundColor: '#00A4DC',
-  },
-});
-
-const StyledCheckbox = styled(Checkbox)({
-  color: 'rgba(255, 255, 255, 0.5)',
-  '&.Mui-checked': {
-    color: '#00A4DC',
-  },
-});
+import { useState } from "react";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Checkbox,
+  FormControlLabel,
+  Paper,
+} from "@mui/material";
 
 export default function SignInPage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
   return (
-    <Box sx={{ 
-      minHeight: '100vh',
-      backgroundColor: '#2a2a2a',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px'
-    }}>
-      <Box sx={{ width: '100%', maxWidth: '400px', textAlign: 'center' }}>
-        <Logo>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: "background.default",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "20px",
+      }}
+    >
+      <Paper
+        elevation={0}
+        sx={{
+          width: "100%",
+          maxWidth: "400px",
+          textAlign: "center",
+          p: 4,
+          borderRadius: 4,
+          bgcolor: "background.paper",
+          border: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        <Typography
+          variant="h3"
+          sx={{
+            color: "primary.main",
+            fontWeight: "bold",
+            mb: 4,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 1,
+          }}
+        >
           Sajipati
-        </Logo>
+        </Typography>
 
-        <Box>
-          <StyledTextField
+        <Box component="form">
+          <TextField
             fullWidth
             label="Username"
             variant="outlined"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            sx={{ mb: 3 }}
           />
 
-          <StyledTextField
+          <TextField
             fullWidth
             label="Password"
             type="password"
             variant="outlined"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            sx={{ mb: 3 }}
           />
 
-          <Box sx={{ textAlign: 'left', mb: 3 }}>
+          <Box sx={{ textAlign: "left", mb: 3 }}>
             <FormControlLabel
               control={
-                <StyledCheckbox
+                <Checkbox
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
+                  color="primary"
                 />
               }
-              label={
-                <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }}>
-                  Remember me
-                </Typography>
-              }
+              label="Remember me"
             />
           </Box>
 
-          <SignInButton fullWidth>
+          <Button
+            fullWidth
+            variant="contained"
+            size="large"
+            sx={{
+              py: 1.5,
+              fontSize: "1rem",
+              fontWeight: "bold",
+              mb: 3,
+              borderRadius: 3,
+            }}
+          >
             Sign In
-          </SignInButton>
+          </Button>
+
+          <Typography variant="body2" color="text.secondary">
+            Don't have an account?{" "}
+            <Box
+              component="span"
+              sx={{ color: "primary.main", cursor: "pointer", fontWeight: 600 }}
+            >
+              Sign Up
+            </Box>
+          </Typography>
         </Box>
-      </Box>
+      </Paper>
     </Box>
   );
 }

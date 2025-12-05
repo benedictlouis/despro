@@ -1,23 +1,26 @@
-import { useState } from 'react';
-// import * as config from ""
-import { 
-  Card, 
-  CardContent, 
-  Typography, 
-  Button, 
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Button,
   Box,
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
+  Stack,
+  IconButton,
+  CircularProgress,
   List,
   ListItem,
+  ListItemText,
   Chip,
-  IconButton,
-  CircularProgress
-} from '@mui/material';
-import { Close as CloseIcon, PlayArrow as PlayIcon } from '@mui/icons-material';
-import config from '../utils/config';
+} from "@mui/material";
+import ArrowOutwardIcon from "@mui/icons-material/ArrowOutward";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import ScaleIcon from "@mui/icons-material/Scale";
+import CloseIcon from "@mui/icons-material/Close";
+import PlayArrowIcon from "@mui/icons-material/PlayArrowRounded";
+import config from "../utils/config";
 
 const API_BASE_URL = config.API_BASE_URL;
 
@@ -49,24 +52,22 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
   const [loading, setLoading] = useState(false);
   const [detailedSteps, setDetailedSteps] = useState<RecipeStep[]>([]);
 
+  // --- ORIGINAL LOGIC RESTORED ---
   const handleCardClick = async () => {
     setOpen(true);
     setLoading(true);
-    
+
     try {
-      // Fetch detailed recipe data including steps
       const response = await fetch(`${API_BASE_URL}/recipe/${recipe.id}`);
-      
+
       if (response.ok) {
         const data = await response.json();
-        console.log('Fetched recipe details:', data);
         setDetailedSteps(data.steps || []);
       } else {
-        console.error('Failed to fetch recipe details');
         setDetailedSteps([]);
       }
     } catch (error) {
-      console.error('Error fetching recipe details:', error);
+      console.error("Error fetching recipe details:", error);
       setDetailedSteps([]);
     } finally {
       setLoading(false);
@@ -82,149 +83,229 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
     onSendToESP32(recipe.id);
     handleClose();
   };
+  // -------------------------------
 
-  const formatStepDetails = (step: RecipeStep) => {
-    const details = [];
-    if (step.ingredient) details.push(`Ingredient: ${step.ingredient}`);
-    if (step.time && step.time > 0) details.push(`Time: ${step.time}s`);
-    if (step.temperature && step.temperature > 0) details.push(`Temperature: ${step.temperature}°C`);
-    if (step.weight && step.weight > 0) details.push(`Weight: ${step.weight}g`);
-    if (step.motor !== undefined) details.push(`Motor: ${step.motor ? 'ON' : 'OFF'}`);
-    if (step.stove_on) details.push(`Stove: ${step.stove_on.toUpperCase()}`);
-    return details.join(' | ');
-  };
+  // Helper to format date cleanly
+  const formattedDate = recipe.createdAt
+    ? new Date(recipe.createdAt).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+      })
+    : "";
 
   return (
     <>
-      <Card 
-        sx={{ 
-          height: '100%',
-          cursor: 'pointer',
-          '&:hover': {
-            boxShadow: 3,
-            transform: 'translateY(-2px)',
-            transition: 'all 0.2s ease-in-out'
-          }
-        }}
+      <Card
+        elevation={0}
         onClick={handleCardClick}
+        sx={{
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          cursor: "pointer",
+          borderRadius: 3,
+          border: "1px solid",
+          borderColor: "divider",
+          bgcolor: "background.paper",
+          transition: "transform 0.3s ease, border-color 0.3s ease",
+          "&:hover": {
+            transform: "translateY(-4px)",
+            borderColor: "primary.main",
+          },
+        }}
       >
-        <CardContent>
-          <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-            <Box flex={1}>
-              <Typography variant="h6" component="h2" gutterBottom>
-                {recipe.name}
+        <CardContent
+          sx={{
+            p: 4,
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+            gap: 3,
+          }}
+        >
+          <Box>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+              mb={1}
+            >
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "text.secondary",
+                }}
+              >
+                RECIPE {recipe.id.substring(0, 4)}
               </Typography>
-              {recipe.createdAt && (
+              {formattedDate && (
                 <Typography variant="caption" color="text.secondary">
-                  Created: {new Date(recipe.createdAt).toLocaleDateString()}
+                  {formattedDate}
                 </Typography>
               )}
-            </Box>
-            <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              startIcon={<PlayIcon />}
-              onClick={(e) => {
-                e.stopPropagation();
-                onSendToESP32(recipe.id);
-              }}
+            </Stack>
+            <Typography
+              variant="h4"
+              component="h2"
+              sx={{ fontWeight: 700, lineHeight: 1.1 }}
             >
-              Execute
-            </Button>
+              {recipe.name}
+            </Typography>
           </Box>
+
+          {/* Action Button */}
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            endIcon={<ArrowOutwardIcon sx={{ fontSize: "16px !important" }} />}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleExecute();
+            }}
+            sx={{
+              borderRadius: 3,
+              py: 1.5,
+              textTransform: "none",
+              fontSize: "1rem",
+              mt: "auto",
+              boxShadow: "none",
+            }}
+          >
+            Cook now
+          </Button>
         </CardContent>
       </Card>
 
-      {/* Recipe Details Modal */}
-      <Dialog 
-        open={open} 
+      {/* Clean Modal */}
+      <Dialog
+        open={open}
         onClose={handleClose}
         maxWidth="md"
         fullWidth
+        PaperProps={{ sx: { borderRadius: 4, p: { xs: 1, md: 3 } } }}
       >
-        <DialogTitle>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h5">{recipe.name}</Typography>
-            <IconButton onClick={handleClose} size="small">
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          px={2}
+          pt={2}
+        >
+          <Typography
+            variant="overline"
+            color="text.secondary"
+            fontWeight={700}
+          >
+            DETAILS
+          </Typography>
+          <IconButton onClick={handleClose}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
         <DialogContent>
+          <Typography variant="h3" gutterBottom sx={{ fontWeight: 700, mb: 4 }}>
+            {recipe.name}
+          </Typography>
+
           {loading ? (
-            <Box display="flex" justifyContent="center" alignItems="center" py={4}>
-              <CircularProgress />
+            <Box display="flex" justifyContent="center" py={8}>
+              <CircularProgress color="inherit" />
             </Box>
           ) : (
-            <>
-              <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-                Recipe Steps ({detailedSteps.length} steps)
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                Preparation Steps
               </Typography>
-              
+
               {detailedSteps.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  No steps available for this recipe.
+                <Typography color="text.secondary" sx={{ fontStyle: "italic" }}>
+                  No steps available.
                 </Typography>
               ) : (
-                <List>
-                  {detailedSteps.map((step: RecipeStep, index: number) => (
-                    <ListItem key={index} divider sx={{ flexDirection: 'column', alignItems: 'flex-start', py: 2 }}>
-                      <Box display="flex" alignItems="center" width="100%" mb={1}>
-                        <Chip 
-                          label={`Step ${step.step || index + 1}`} 
-                          size="small" 
-                          color="primary" 
-                          sx={{ mr: 2 }}
-                        />
-                        <Typography variant="h6" component="span">
-                          {step.action?.replace(/_/g, ' ').toUpperCase() || 'UNKNOWN ACTION'}
+                <List sx={{ px: 0 }}>
+                  {detailedSteps.map((step, index) => (
+                    <ListItem
+                      key={index}
+                      disablePadding
+                      sx={{
+                        py: 2,
+                        borderBottom: "1px solid",
+                        borderColor: "divider",
+                        display: "flex",
+                        flexDirection: { xs: "column", sm: "row" },
+                        alignItems: { xs: "flex-start", sm: "center" },
+                        gap: 2,
+                      }}
+                    >
+                      <Box sx={{ minWidth: 40 }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          fontWeight={700}
+                        >
+                          {(index + 1).toString().padStart(2, "0")}
                         </Typography>
                       </Box>
-                      
-                      {formatStepDetails(step) && (
-                        <Typography 
-                          variant="body2" 
-                          color="text.secondary"
-                          sx={{ ml: 2 }}
-                        >
-                          {formatStepDetails(step)}
-                        </Typography>
-                      )}
+
+                      <Box sx={{ flex: 1 }}>
+                        <ListItemText
+                          primary={step.action.replace(/_/g, " ").toUpperCase()}
+                          primaryTypographyProps={{
+                            fontWeight: 700,
+                            variant: "body1",
+                          }}
+                          secondary={step.ingredient}
+                        />
+                      </Box>
+
+                      <Stack direction="row" spacing={1}>
+                        {step.time && step.time > 0 && (
+                          <Chip
+                            icon={<AccessTimeIcon />}
+                            label={`${step.time}s`}
+                            variant="outlined"
+                            size="small"
+                          />
+                        )}
+                        {step.weight && step.weight > 0 && (
+                          <Chip
+                            icon={<ScaleIcon />}
+                            label={`${step.weight}g`}
+                            variant="outlined"
+                            size="small"
+                          />
+                        )}
+                        {step.temperature && step.temperature > 0 && (
+                          <Chip
+                            label={`${step.temperature}°C`}
+                            variant="outlined"
+                            size="small"
+                          />
+                        )}
+                      </Stack>
                     </ListItem>
                   ))}
                 </List>
               )}
 
-              {recipe.createdAt && (
-                <Box mt={2} p={2} bgcolor="background.paper" borderRadius={1} border="1px solid #e0e0e0">
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Created:</strong> {new Date(recipe.createdAt).toLocaleString()}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Recipe ID:</strong> {recipe.id}
-                  </Typography>
-                </Box>
-              )}
-            </>
+              <Button
+                variant="contained"
+                size="large"
+                fullWidth
+                startIcon={<PlayArrowIcon />}
+                onClick={handleExecute}
+                sx={{ mt: 4, borderRadius: 50, py: 2, fontSize: "1.1rem" }}
+              >
+                Start Cooking Process
+              </Button>
+            </Box>
           )}
         </DialogContent>
-        
-        <DialogActions>
-          <Button onClick={handleClose}>
-            Close
-          </Button>
-          <Button 
-            onClick={handleExecute}
-            variant="contained" 
-            color="primary"
-            startIcon={<PlayIcon />}
-            disabled={loading}
-          >
-            Execute Recipe
-          </Button>
-        </DialogActions>
       </Dialog>
     </>
   );

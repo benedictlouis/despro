@@ -77,6 +77,7 @@ app.post("/send-menu", async (req, res) => {
 
     client.publish(
       `${baseTopic}/web/menus`,
+      { retain: true },
       JSON.stringify(mqttMessage),
       (error) => {
         if (error) {
