@@ -17,6 +17,7 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SendIcon from "@mui/icons-material/Send";
 import RestaurantIcon from "@mui/icons-material/Restaurant";
+import config from "./utils/config";
 
 interface Recipe {
   id: string;
@@ -33,7 +34,7 @@ export default function RecipeForm() {
   const [message, setMessage] = useState("");
   const [showMessage, setShowMessage] = useState(false);
 
-  const API_BASE_URL = "http://localhost:4321"; // Sesuaikan dengan port backend Anda
+  const API_BASE_URL = config.API_BASE_URL;
 
   // Load recipes dari backend saat component mount
   useEffect(() => {

@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import RecipeCard from '../components/RecipeCard';
+import config from '../utils/config';
 
 interface RecipeStep {
   action: string;
@@ -36,7 +37,7 @@ interface Recipe {
   createdAt: string;
 }
 
-const API_BASE_URL = "http://localhost:4321";
+const API_BASE_URL = config.API_BASE_URL;
 
 export default function RecipePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);

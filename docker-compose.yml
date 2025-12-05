@@ -1,0 +1,22 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sajipati-client
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:34255:3000"  
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sajipati-api
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:34256:5000" 
+    env_file:
+      - ./backend/.env
