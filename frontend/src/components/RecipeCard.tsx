@@ -26,8 +26,8 @@ interface RecipeStep {
 interface Recipe {
   id: string;
   name: string;
-  steps: RecipeStep[];
-  createdAt: string;
+  steps?: RecipeStep[];
+  createdAt?: string;
 }
 
 interface RecipeCardProps {
@@ -59,11 +59,27 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
     return details.join(' | ');
   };
 
+  // Parse steps if it's a string
+  const parseSteps = () => {
+    if (!recipe.steps) return [];
+    if (typeof recipe.steps === 'string') {
+      try {
+        return JSON.parse(recipe.steps);
+      } catch (e) {
+        console.error('Failed to parse steps:', e);
+        return [];
+      }
+    }
+    return recipe.steps;
+  };
+
+  const steps = parseSteps();
+
   return (
     <>
       <Card 
         sx={{ 
-          mb: 2, 
+          height: '100%',
           cursor: 'pointer',
           '&:hover': {
             boxShadow: 3,
@@ -80,11 +96,13 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
                 {recipe.name}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {recipe.steps.length} step{recipe.steps.length !== 1 ? 's' : ''}
+                {steps.length} step{steps.length !== 1 ? 's' : ''}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Created: {new Date(recipe.createdAt).toLocaleDateString()}
-              </Typography>
+              {recipe.createdAt && (
+                <Typography variant="caption" color="text.secondary">
+                  Created: {new Date(recipe.createdAt).toLocaleDateString()}
+                </Typography>
+              )}
             </Box>
             <Button
               variant="contained"
@@ -120,43 +138,53 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
         
         <DialogContent>
           <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-            Recipe Steps ({recipe.steps.length} steps)
+            Recipe Steps ({steps.length} steps)
           </Typography>
           
-          <List>
-            {recipe.steps.map((step, index) => (
-              <ListItem key={index} divider sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                <Box display="flex" alignItems="center" width="100%" mb={1}>
-                  <Chip 
-                    label={`Step ${index + 1}`} 
-                    size="small" 
-                    color="primary" 
-                    sx={{ mr: 2 }}
-                  />
-                  <Typography variant="h6" component="span">
-                    {step.action.replace(/_/g, ' ').toUpperCase()}
-                  </Typography>
-                </Box>
-                
-                {formatStepDetails(step) && (
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary"
-                    sx={{ ml: 2 }}
-                  >
-                    {formatStepDetails(step)}
-                  </Typography>
-                )}
-              </ListItem>
-            ))}
-          </List>
-
-          <Box mt={2} p={2} bgcolor="background.paper" borderRadius={1}>
+          {steps.length === 0 ? (
             <Typography variant="body2" color="text.secondary">
-              <strong>Created:</strong> {new Date(recipe.createdAt).toLocaleString()}
+              No steps available for this recipe.
             </Typography>
-       
-          </Box>
+          ) : (
+            <List>
+              {steps.map((step, index) => (
+                <ListItem key={index} divider sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <Box display="flex" alignItems="center" width="100%" mb={1}>
+                    <Chip 
+                      label={`Step ${index + 1}`} 
+                      size="small" 
+                      color="primary" 
+                      sx={{ mr: 2 }}
+                    />
+                    <Typography variant="h6" component="span">
+                      {step.action.replace(/_/g, ' ').toUpperCase()}
+                    </Typography>
+                  </Box>
+                  
+                  {formatStepDetails(step) && (
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary"
+                      sx={{ ml: 2 }}
+                    >
+                      {formatStepDetails(step)}
+                    </Typography>
+                  )}
+                </ListItem>
+              ))}
+            </List>
+          )}
+
+          {recipe.createdAt && (
+            <Box mt={2} p={2} bgcolor="background.paper" borderRadius={1}>
+              <Typography variant="body2" color="text.secondary">
+                <strong>Created:</strong> {new Date(recipe.createdAt).toLocaleString()}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                <strong>Recipe ID:</strong> {recipe.id}
+              </Typography>
+            </Box>
+          )}
         </DialogContent>
         
         <DialogActions>

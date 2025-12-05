@@ -11,7 +11,6 @@ import {
   Box,
   MenuItem,
   IconButton,
-  Chip,
   Alert,
   CircularProgress
 } from '@mui/material';
@@ -42,36 +41,16 @@ export default function RecipePage() {
   const [steps, setSteps] = useState<RecipeStep[]>([
     { action: '', time: 0, ingredient: '', temperature: 0 }
   ]);
-  const [customActions, setCustomActions] = useState<string[]>([]);
-  const [newActionName, setNewActionName] = useState('');
-  const [actionLoading, setActionLoading] = useState(false);
 
-  const defaultActionOptions = [
+  const actionOptions = [
     'turn_on', 'turn_off', 'wait', 'stir', 'crack', 'fry', 
     'set_temperature', 'add', 'mix', 'boil', 'bake', 'serve'
   ];
 
-  const actionOptions = [...defaultActionOptions, ...customActions];
-
-  // Fetch recipes and custom actions from backend
+  // Fetch recipes from backend
   useEffect(() => {
     fetchRecipes();
-    fetchCustomActions();
   }, []);
-
-  const fetchCustomActions = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/custom-actions`);
-      if (response.ok) {
-        const data = await response.json();
-        setCustomActions(data.actions || []);
-      } else {
-        console.error('Failed to fetch custom actions');
-      }
-    } catch (error) {
-      console.error('Error fetching custom actions:', error);
-    }
-  };
 
   const fetchRecipes = async () => {
     try {
@@ -123,57 +102,6 @@ export default function RecipePage() {
     const newSteps = [...steps];
     newSteps[index] = { ...newSteps[index], [field]: value };
     setSteps(newSteps);
-  };
-
-  const handleAddCustomAction = async () => {
-    const actionName = newActionName.trim().toLowerCase().replace(/\s+/g, '_');
-    if (actionName && !actionOptions.includes(actionName)) {
-      setActionLoading(true);
-      try {
-        const response = await fetch(`${API_BASE_URL}/custom-actions`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ action: actionName }),
-        });
-
-        if (response.ok) {
-          await fetchCustomActions();
-          setNewActionName('');
-        } else {
-          const error = await response.json();
-          alert(`Failed to add custom action: ${error.error}`);
-        }
-      } catch (error) {
-        console.error('Error adding custom action:', error);
-        alert('Error adding custom action');
-      } finally {
-        setActionLoading(false);
-      }
-    }
-  };
-
-  const handleRemoveCustomAction = async (index: number) => {
-    const actionToRemove = customActions[index];
-    setActionLoading(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/custom-actions/${encodeURIComponent(actionToRemove)}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        await fetchCustomActions();
-      } else {
-        const error = await response.json();
-        alert(`Failed to remove custom action: ${error.error}`);
-      }
-    } catch (error) {
-      console.error('Error removing custom action:', error);
-      alert('Error removing custom action');
-    } finally {
-      setActionLoading(false);
-    }
   };
 
   const handleSubmit = async () => {
@@ -232,9 +160,15 @@ export default function RecipePage() {
           No recipes found. Create your first recipe to get started!
         </Alert>
       ) : (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+        <Box 
+          sx={{ 
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+            gap: 2
+          }}
+        >
           {recipes.map((recipe) => (
-            <Box key={recipe.id} sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+            <Box key={recipe.id}>
               <RecipeCard
                 recipe={recipe}
                 onSendToESP32={sendToESP32}
@@ -337,38 +271,6 @@ export default function RecipePage() {
           >
             Add Step
           </Button>
-
-          {/* Custom Actions Section */}
-          <Typography variant="h6" gutterBottom>
-            Custom Actions
-          </Typography>
-          
-          <Box display="flex" gap={1} mb={2} flexWrap="wrap">
-            {customActions.map((action, index) => (
-              <Chip
-                key={action}
-                label={action}
-                onDelete={() => handleRemoveCustomAction(index)}
-                disabled={actionLoading}
-              />
-            ))}
-          </Box>
-
-          <Box display="flex" gap={1} mb={2}>
-            <TextField
-              label="New Action Name"
-              value={newActionName}
-              onChange={(e) => setNewActionName(e.target.value)}
-              size="small"
-            />
-            <Button
-              onClick={handleAddCustomAction}
-              variant="outlined"
-              disabled={actionLoading || !newActionName.trim()}
-            >
-              {actionLoading ? <CircularProgress size={20} /> : 'Add'}
-            </Button>
-          </Box>
         </DialogContent>
 
         <DialogActions>
