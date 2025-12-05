@@ -1,0 +1,45 @@
+/* Dashboard specific styles */
+.dashboard-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container {
+  width: 100%;
+  height: 300px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.device-card {
+  border-left: 4px solid #1976d2;
+}
+
+.device-card.online {
+  border-left-color: #2e7d32;
+}
+
+.device-card.offline {
+  border-left-color: #d32f2f;
+}
+
+/* Recharts customization */
+.recharts-wrapper {
+  font-family: 'Roboto', sans-serif;
+}
+
+.recharts-cartesian-axis-tick-value {
+  font-size: 12px;
+}
+
+.recharts-tooltip-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
