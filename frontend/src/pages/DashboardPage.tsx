@@ -8,8 +8,12 @@ import {
   CardHeader,
   CircularProgress,
   Chip,
-  LinearProgress
+  LinearProgress,
+  Button,
+  Alert,
+  Snackbar
 } from '@mui/material';
+import { Send as SendIcon, Restaurant as RestaurantIcon } from '@mui/icons-material';
 import '../styles/dashboard.css';
 import {
   BarChart,
@@ -28,7 +32,8 @@ import {
   AreaChart
 } from 'recharts';
 
-// Sample data - replace with real API calls
+const API_BASE_URL = "http://localhost:4321";
+
 const recipeUsageData = [
   { name: 'Nasi Goreng', count: 45, color: '#8884d8' },
   { name: 'Ayam Bakar', count: 32, color: '#82ca9d' },
@@ -81,6 +86,12 @@ export default function DashboardPage() {
     successRate: 0
   });
   const [loading, setLoading] = useState(true);
+  const [sendingMenu, setSendingMenu] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error' | 'info'
+  });
 
   useEffect(() => {
     // Simulate API call for dashboard stats
@@ -100,6 +111,47 @@ export default function DashboardPage() {
 
     fetchStats();
   }, []);
+
+  const handleSendMenuToMQTT = async () => {
+    setSendingMenu(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/send-menu`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSnackbar({
+          open: true,
+          message: `Successfully sent ${data.total} recipes to MQTT broker!`,
+          severity: 'success'
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: data.error || 'Failed to send menu to MQTT',
+          severity: 'error'
+        });
+      }
+    } catch (error) {
+      console.error('Error sending menu:', error);
+      setSnackbar({
+        open: true,
+        message: 'Network error. Failed to send menu to MQTT.',
+        severity: 'error'
+      });
+    } finally {
+      setSendingMenu(false);
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   const StatCard = ({ title, value, subtitle, color = '#1976d2', progress }: {
     title: string;
@@ -150,10 +202,25 @@ export default function DashboardPage() {
 
   return (
     <Container maxWidth="xl">
-      <Box mb={4}>
-        <Typography variant="h4" component="h1" gutterBottom>
+      <Box mb={4} display="flex" justifyContent="space-between" alignItems="center">
+        <Typography variant="h4" component="h1">
           Kitchen Dashboard
         </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={sendingMenu ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
+          onClick={handleSendMenuToMQTT}
+          disabled={sendingMenu}
+          sx={{
+            px: 3,
+            py: 1.5,
+            fontSize: '16px',
+            fontWeight: 'bold'
+          }}
+        >
+          {sendingMenu ? 'Sending...' : 'Send Menu to Hardware'}
+        </Button>
       </Box>
 
       {/* Stats Cards */}
@@ -191,6 +258,34 @@ export default function DashboardPage() {
             progress={stats.successRate}
           />
         </Box>
+      </Box>
+
+      {/* Menu Sync Card */}
+      <Box mb={4}>
+        <Card sx={{ backgroundColor: '#e3f2fd' }}>
+          <CardContent>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box display="flex" alignItems="center" gap={2}>
+                <RestaurantIcon sx={{ fontSize: 40, color: '#1976d2' }} />
+                <Box>
+                  <Typography variant="h6" color="primary">
+                    Send all menu
+                  </Typography>
+                </Box>
+              </Box>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={sendingMenu ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
+                onClick={handleSendMenuToMQTT}
+                disabled={sendingMenu}
+                size="large"
+              >
+                {sendingMenu ? 'Sending...' : 'Send'}
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
       </Box>
 
       {/* Charts Row 1 */}
@@ -406,6 +501,22 @@ export default function DashboardPage() {
           </Card>
         </Box>
       </Box>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

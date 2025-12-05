@@ -26,7 +26,7 @@ interface RecipeStep {
 interface Recipe {
   id: string;
   name: string;
-  steps?: RecipeStep[];
+  steps?: RecipeStep[] | string;
   createdAt?: string;
 }
 
@@ -60,17 +60,20 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
   };
 
   // Parse steps if it's a string
-  const parseSteps = () => {
+  const parseSteps = (): RecipeStep[] => {
     if (!recipe.steps) return [];
+    
     if (typeof recipe.steps === 'string') {
       try {
-        return JSON.parse(recipe.steps);
+        const parsed = JSON.parse(recipe.steps);
+        return Array.isArray(parsed) ? parsed : [];
       } catch (e) {
         console.error('Failed to parse steps:', e);
         return [];
       }
     }
-    return recipe.steps;
+    
+    return Array.isArray(recipe.steps) ? recipe.steps : [];
   };
 
   const steps = parseSteps();
@@ -147,7 +150,7 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
             </Typography>
           ) : (
             <List>
-              {steps.map((step, index) => (
+              {Array.isArray(steps) && steps.map((step: RecipeStep, index: number) => (
                 <ListItem key={index} divider sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                   <Box display="flex" alignItems="center" width="100%" mb={1}>
                     <Chip 
@@ -157,7 +160,7 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
                       sx={{ mr: 2 }}
                     />
                     <Typography variant="h6" component="span">
-                      {step.action.replace(/_/g, ' ').toUpperCase()}
+                      {step.action?.replace(/_/g, ' ').toUpperCase() || 'UNKNOWN ACTION'}
                     </Typography>
                   </Box>
                   
