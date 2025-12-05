@@ -275,6 +275,32 @@ app.post("/execute-recipe/:id", async (req, res) => {
   }
 });
 
+// DELETE /recipes/:id - delete a recipe
+app.delete("/recipes/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if recipe exists
+    const check = await pool.query("SELECT id FROM recipes WHERE id = $1", [id]);
+
+    if (check.rows.length === 0) {
+      return res.status(404).json({ error: "Recipe not found" });
+    }
+
+    // Delete the recipe
+    await pool.query("DELETE FROM recipes WHERE id = $1", [id]);
+
+    res.json({
+      message: "Recipe deleted successfully",
+      deleted_id: id,
+    });
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ error: "Failed to delete recipe" });
+  }
+});
+
+
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.json({
