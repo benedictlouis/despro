@@ -1,9 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import MainLayout from "./layouts/MainLayout";
 import RecipePage from "./pages/RecipePage";
 import SignInPage from "./pages/SignInPage";
 import DashboardPage from "./pages/DashboardPage";
+import LandingPage from "./pages/LandingPage";
 import { theme } from "./utils/themes";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -15,6 +16,7 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<LandingPage />} />
             <Route path="/signin" element={<SignInPage />} />
             <Route
               path="/*"
@@ -24,7 +26,6 @@ function App() {
                     <Routes>
                       <Route path="/dashboard" element={<DashboardPage />} />
                       <Route path="/recipes" element={<RecipePage />} />
-                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     </Routes>
                   </MainLayout>
                 </ProtectedRoute>

@@ -421,9 +421,7 @@ export default function RecipePage() {
                     }
                   >
                     <MenuItem value="off">OFF</MenuItem>
-                    <MenuItem value="low">LOW</MenuItem>
-                    <MenuItem value="medium">MEDIUM</MenuItem>
-                    <MenuItem value="high">HIGH</MenuItem>
+                    <MenuItem value="on">ON</MenuItem>
                   </TextField>
                 </Grid>
               </Grid>

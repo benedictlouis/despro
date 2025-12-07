@@ -8,6 +8,15 @@ CREATE TABLE public.users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+#refresh_tokens table
+CREATE TABLE refresh_tokens (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  token TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+
 #recipes table
 CREATE TABLE public.recipes (
   id uuid NOT NULL,
