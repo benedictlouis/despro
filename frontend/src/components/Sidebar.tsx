@@ -8,15 +8,6 @@ import {
   Typography,
   Stack,
 } from "@mui/material";
-<<<<<<< HEAD
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import LocalDiningIcon from '@mui/icons-material/LocalDining';
-import type { ReactNode } from "react";
-
-const drawerWidthOpen = 240;
-const drawerWidthClosed = 60;
-=======
->>>>>>> 8eb1a6827f0587bd451668971f031aca00e146a9
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -31,17 +22,10 @@ export default function Sidebar({
 }: SidebarProps) {
   const location = useLocation();
 
-<<<<<<< HEAD
-export default function Sidebar({ open }: SidebarProps) {
-  const menuItems: MenuItem[] = [
-    { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
-    { text: "Recipe", icon: <LocalDiningIcon />, path: "/recipes" },
-=======
   const menuItems = [
     { text: "Home", path: "/" },
     { text: "Dashboard", path: "/dashboard" },
     { text: "Recipes", path: "/recipes" },
->>>>>>> 8eb1a6827f0587bd451668971f031aca00e146a9
   ];
 
   const drawerContent = (

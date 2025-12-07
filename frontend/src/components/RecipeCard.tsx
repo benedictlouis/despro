@@ -14,12 +14,6 @@ import {
   ListItem,
   ListItemText,
   Chip,
-<<<<<<< HEAD
-  IconButton,
-  CircularProgress
-} from '@mui/material';
-import { Close as CloseIcon, PlayArrow as PlayIcon, Delete as DeleteIcon } from '@mui/icons-material';
-=======
 } from "@mui/material";
 import ArrowOutwardIcon from "@mui/icons-material/ArrowOutward";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -27,7 +21,6 @@ import ScaleIcon from "@mui/icons-material/Scale";
 import CloseIcon from "@mui/icons-material/Close";
 import PlayArrowIcon from "@mui/icons-material/PlayArrowRounded";
 import config from "../utils/config";
->>>>>>> 8eb1a6827f0587bd451668971f031aca00e146a9
 
 const API_BASE_URL = config.API_BASE_URL;
 
@@ -52,10 +45,9 @@ interface Recipe {
 interface RecipeCardProps {
   recipe: Recipe;
   onSendToESP32: (recipeId: string) => void;
-  onDelete: (recipeId: string, recipeName: string) => void;
 }
 
-export default function RecipeCard({ recipe, onSendToESP32, onDelete }: RecipeCardProps) {
+export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [detailedSteps, setDetailedSteps] = useState<RecipeStep[]>([]);
@@ -93,23 +85,6 @@ export default function RecipeCard({ recipe, onSendToESP32, onDelete }: RecipeCa
   };
   // -------------------------------
 
-<<<<<<< HEAD
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onDelete(recipe.id, recipe.name);
-  };
-
-  const formatStepDetails = (step: RecipeStep) => {
-    const details = [];
-    if (step.ingredient) details.push(`Ingredient: ${step.ingredient}`);
-    if (step.time && step.time > 0) details.push(`Time: ${step.time}s`);
-    if (step.temperature && step.temperature > 0) details.push(`Temperature: ${step.temperature}°C`);
-    if (step.weight && step.weight > 0) details.push(`Weight: ${step.weight}g`);
-    if (step.motor !== undefined) details.push(`Motor: ${step.motor ? 'ON' : 'OFF'}`);
-    if (step.stove_on) details.push(`Stove: ${step.stove_on.toUpperCase()}`);
-    return details.join(' | ');
-  };
-=======
   // Helper to format date cleanly
   const formattedDate = recipe.createdAt
     ? new Date(recipe.createdAt).toLocaleDateString(undefined, {
@@ -117,7 +92,6 @@ export default function RecipeCard({ recipe, onSendToESP32, onDelete }: RecipeCa
         day: "numeric",
       })
     : "";
->>>>>>> 8eb1a6827f0587bd451668971f031aca00e146a9
 
   return (
     <>
@@ -140,13 +114,6 @@ export default function RecipeCard({ recipe, onSendToESP32, onDelete }: RecipeCa
           },
         }}
       >
-<<<<<<< HEAD
-        <CardContent>
-          <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-            <Box flex={1}>
-              <Typography variant="h6" component="h2" gutterBottom>
-                {recipe.name}
-=======
         <CardContent
           sx={{
             p: 4,
@@ -173,44 +140,17 @@ export default function RecipeCard({ recipe, onSendToESP32, onDelete }: RecipeCa
                 }}
               >
                 RECIPE {recipe.id.substring(0, 4)}
->>>>>>> 8eb1a6827f0587bd451668971f031aca00e146a9
               </Typography>
               {formattedDate && (
                 <Typography variant="caption" color="text.secondary">
                   {formattedDate}
                 </Typography>
               )}
-<<<<<<< HEAD
-            </Box>
-            <IconButton
-              onClick={handleDelete}
-              color="error"
-              size="small"
-              sx={{ ml: 1 }}
-              aria-label="delete recipe"
-            >
-              <DeleteIcon />
-            </IconButton>
-          </Box>
-          
-          <Box display="flex" gap={1}>
-            <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              startIcon={<PlayIcon />}
-              fullWidth
-              onClick={(e) => {
-                e.stopPropagation();
-                onSendToESP32(recipe.id);
-              }}
-=======
             </Stack>
             <Typography
               variant="h4"
               component="h2"
               sx={{ fontWeight: 700, lineHeight: 1.1 }}
->>>>>>> 8eb1a6827f0587bd451668971f031aca00e146a9
             >
               {recipe.name}
             </Typography>

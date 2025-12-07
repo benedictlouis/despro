@@ -8,15 +8,6 @@ import {
   Grid,
   Fade,
   CircularProgress,
-<<<<<<< HEAD
-  FormControlLabel,
-  Switch,
-  Chip,
-  Snackbar
-} from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import RecipeCard from '../components/RecipeCard';
-=======
   Dialog,
   DialogContent,
   DialogTitle,
@@ -31,7 +22,6 @@ import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import RecipeCard from "../components/RecipeCard";
 import config from "../utils/config";
->>>>>>> 8eb1a6827f0587bd451668971f031aca00e146a9
 
 // --- ORIGINAL INTERFACES ---
 interface RecipeStep {
@@ -71,20 +61,6 @@ export default function RecipePage() {
       stove_on: "off",
     },
   ]);
-  const [deleteDialog, setDeleteDialog] = useState<{
-    open: boolean;
-    recipeId: string | null;
-    recipeName: string;
-  }>({
-    open: false,
-    recipeId: null,
-    recipeName: ''
-  });
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: '',
-    severity: 'success' as 'success' | 'error'
-  });
 
   const actionOptions = [
     "turn_on",
@@ -134,98 +110,16 @@ export default function RecipePage() {
 
       if (response.ok) {
         const result = await response.json();
-        setSnackbar({
-          open: true,
-          message: `Recipe "${result.recipe_name}" sent to ESP32 successfully!`,
-          severity: 'success'
-        });
+        alert(`Recipe "${result.recipe_name}" sent to ESP32 successfully!`);
       } else {
         const error = await response.json();
-        setSnackbar({
-          open: true,
-          message: `Failed to send recipe: ${error.error}`,
-          severity: 'error'
-        });
+        alert(`Failed to send recipe: ${error.error}`);
       }
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Error sending recipe to ESP32:', error);
-      setSnackbar({
-        open: true,
-        message: 'Error sending recipe to ESP32',
-        severity: 'error'
-      });
-    }
-  };
-
-  const handleDeleteClick = (recipeId: string, recipeName: string) => {
-    setDeleteDialog({
-      open: true,
-      recipeId,
-      recipeName
-    });
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteDialog.recipeId) return;
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/recipes/${deleteDialog.recipeId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setSnackbar({
-          open: true,
-          message: `Recipe "${deleteDialog.recipeName}" deleted successfully!`,
-          severity: 'success'
-        });
-        fetchRecipes();
-      } else {
-        const error = await response.json();
-        setSnackbar({
-          open: true,
-          message: error.error || 'Failed to delete recipe',
-          severity: 'error'
-        });
-      }
-    } catch (error) {
-      console.error('Error deleting recipe:', error);
-      setSnackbar({
-        open: true,
-        message: 'Error deleting recipe',
-        severity: 'error'
-      });
-    } finally {
-      setDeleteDialog({ open: false, recipeId: null, recipeName: '' });
-    }
-  };
-
-  const handleDeleteCancel = () => {
-    setDeleteDialog({ open: false, recipeId: null, recipeName: '' });
-  };
-
-  const handleAddStep = () => {
-    setSteps([...steps, { action: '', temperature: 0, weight: 0, time: 0, motor: false, stove_on: 'off' }]);
-  };
-
-  const handleRemoveStep = (index: number) => {
-    if (steps.length > 1) {
-      setSteps(steps.filter((_, i) => i !== index));
-    }
-  };
-
-  const handleStepChange = (index: number, field: keyof RecipeStep, value: string | number | boolean) => {
-    const newSteps = [...steps];
-    newSteps[index] = { ...newSteps[index], [field]: value };
-    setSteps(newSteps);
-  };
-=======
       console.error("Error sending recipe to ESP32:", error);
       alert("Error sending recipe to ESP32");
     }
   }, []);
->>>>>>> 8eb1a6827f0587bd451668971f031aca00e146a9
 
   const handleSubmit = async () => {
     try {
@@ -240,30 +134,6 @@ export default function RecipePage() {
 
       if (response.ok) {
         setOpenDialog(false);
-<<<<<<< HEAD
-        setRecipeName('');
-        setSteps([{ action: '', temperature: 0, weight: 0, time: 0, motor: false, stove_on: 'off' }]);
-        setSnackbar({
-          open: true,
-          message: 'Recipe created successfully!',
-          severity: 'success'
-        });
-        fetchRecipes();
-      } else {
-        setSnackbar({
-          open: true,
-          message: 'Failed to create recipe',
-          severity: 'error'
-        });
-      }
-    } catch (error) {
-      console.error('Error creating recipe:', error);
-      setSnackbar({
-        open: true,
-        message: 'Error creating recipe',
-        severity: 'error'
-      });
-=======
         setRecipeName("");
         setSteps([
           {
@@ -281,7 +151,6 @@ export default function RecipePage() {
       }
     } catch (error) {
       console.error("Error creating recipe:", error);
->>>>>>> 8eb1a6827f0587bd451668971f031aca00e146a9
     }
   };
 
@@ -392,35 +261,10 @@ export default function RecipePage() {
         </Button>
       </Box>
 
-<<<<<<< HEAD
-      {/* Recipes List */}
-      {recipes.length === 0 ? (
-        <Alert severity="info">
-          No recipes found. Create your first recipe to get started!
-        </Alert>
-      ) : (
-        <Box 
-          sx={{ 
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-            gap: 2
-          }}
-        >
-          {recipes.map((recipe) => (
-            <Box key={recipe.id}>
-              <RecipeCard
-                recipe={recipe}
-                onSendToESP32={sendToESP32}
-                onDelete={handleDeleteClick}
-              />
-            </Box>
-          ))}
-=======
       {/* Grid */}
       {loading ? (
         <Box display="flex" justifyContent="center" py={10}>
           <CircularProgress color="inherit" />
->>>>>>> 8eb1a6827f0587bd451668971f031aca00e146a9
         </Box>
       ) : (
         <Grid container spacing={4}>
@@ -529,32 +373,8 @@ export default function RecipePage() {
                 )}
               </Box>
 
-<<<<<<< HEAD
-              {/* Row 1: Action */}
-              <Box sx={{ mb: 2 }}>
-                <TextField
-                  select
-                  label="Action *"
-                  fullWidth
-                  value={step.action}
-                  onChange={(e) => handleStepChange(index, 'action', e.target.value)}
-                  required
-                >
-                  {actionOptions.map((option) => (
-                    <MenuItem key={option} value={option}>
-                      {option.replace(/_/g, ' ').toUpperCase()}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Box>
-
-              {/* Row 2: Temperature and Weight */}
-              <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-                <Box sx={{ flex: '1 1 45%', minWidth: '200px' }}>
-=======
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 6 }}>
->>>>>>> 8eb1a6827f0587bd451668971f031aca00e146a9
                   <TextField
                     select
                     label="Action"
@@ -611,55 +431,6 @@ export default function RecipePage() {
                       handleStepChange(index, "weight", Number(e.target.value))
                     }
                   />
-<<<<<<< HEAD
-                </Box>
-              </Box>
-
-              {/* Row 3: Time */}
-              <Box sx={{ mb: 2 }}>
-                <TextField
-                  label="Time (seconds)"
-                  type="number"
-                  fullWidth
-                  value={step.time}
-                  onChange={(e) => handleStepChange(index, 'time', parseInt(e.target.value) || 0)}
-                  inputProps={{ min: 0 }}
-                />
-              </Box>
-
-              {/* Row 4: Motor and Stove Switches */}
-              <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={step.motor}
-                      onChange={(e) => handleStepChange(index, 'motor', e.target.checked)}
-                      color="primary"
-                    />
-                  }
-                  label={
-                    <Typography variant="body1">
-                      Motor: <strong>{step.motor ? 'ON' : 'OFF'}</strong>
-                    </Typography>
-                  }
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={step.stove_on === 'on'}
-                      onChange={(e) => handleStepChange(index, 'stove_on', e.target.checked ? 'on' : 'off')}
-                      color="primary"
-                    />
-                  }
-                  label={
-                    <Typography variant="body1">
-                      Stove: <strong>{step.stove_on === 'on' ? 'ON' : 'OFF'}</strong>
-                    </Typography>
-                  }
-                />
-              </Box>
-            </Box>
-=======
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>
                   <TextField
@@ -680,7 +451,6 @@ export default function RecipePage() {
                 </Grid>
               </Grid>
             </Paper>
->>>>>>> 8eb1a6827f0587bd451668971f031aca00e146a9
           ))}
 
           <Button
@@ -720,44 +490,6 @@ export default function RecipePage() {
           </Button>
         </DialogActions>
       </Dialog>
-<<<<<<< HEAD
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialog.open} onClose={handleDeleteCancel}>
-        <DialogTitle>Delete Recipe</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete "<strong>{deleteDialog.recipeName}</strong>"?
-            <br />
-            This action cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDeleteCancel}>Cancel</Button>
-          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Snackbar Notification */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Container>
-=======
     </Box>
->>>>>>> 8eb1a6827f0587bd451668971f031aca00e146a9
   );
 }
