@@ -18,6 +18,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const drawerWidth = 280;
+  const collapsedWidth = 80;
+  const currentWidth = sidebarCollapsed ? collapsedWidth : drawerWidth;
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -37,7 +42,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <Sidebar
         mobileOpen={mobileOpen}
         onClose={handleDrawerToggle}
-        drawerWidth={280}
+        drawerWidth={drawerWidth}
+        onCollapsedChange={setSidebarCollapsed}
       />
 
       {/* Main Content Area */}
@@ -47,8 +53,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
           flexGrow: 1,
           display: "flex",
           flexDirection: "column",
-          width: { md: `calc(100% - 280px)` }, // Adjust width to respect sidebar
+          width: { md: `calc(100% - ${currentWidth}px)` },
           minHeight: "100vh",
+          transition: "width 0.3s ease",
         }}
       >
         {/* Mobile Toggle (Only visible on small screens) */}

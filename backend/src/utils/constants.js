@@ -19,7 +19,7 @@ const ERROR_MESSAGES = {
   FAILED_TO_SEND_MENU: "Failed to send menu to MQTT",
   FAILED_TO_EXECUTE_RECIPE: "Failed to execute recipe",
   NO_RECIPES_FOUND: "No recipes found",
-  
+
   // Auth errors
   USERNAME_PASSWORD_REQUIRED: "Username and password are required",
   USERNAME_ALREADY_EXISTS: "Username already exists",
@@ -31,19 +31,18 @@ const ERROR_MESSAGES = {
   USER_NOT_FOUND: "User not found",
   UNAUTHORIZED: "Unauthorized",
   ACCESS_DENIED: "Access denied. Admin privileges required.",
-  
+
   // General errors
   ROUTE_NOT_FOUND: "Route not found",
   INTERNAL_SERVER_ERROR: "Internal server error",
 };
 
 const SUCCESS_MESSAGES = {
-  // Recipe success
   RECIPE_CREATED: "Recipe created successfully",
+  RECIPE_DELETED: "Recipe deleted successfully",
   MENU_SENT: "Menu sent to MQTT successfully",
   RECIPE_SENT: "Recipe sent to ESP32 successfully",
-  
-  // Auth success
+
   USER_REGISTERED: "User registered successfully",
   LOGIN_SUCCESSFUL: "Login successful",
   LOGOUT_SUCCESSFUL: "Logout successful",

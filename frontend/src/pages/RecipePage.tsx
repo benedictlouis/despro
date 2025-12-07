@@ -15,6 +15,7 @@ import {
   IconButton,
   MenuItem,
   Paper,
+  DialogContentText,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
@@ -22,31 +23,32 @@ import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import RecipeCard from "../components/RecipeCard";
 import apiClient from "../utils/apiClient";
+import { useToast } from "../contexts/ToastContext";
 
-// --- ORIGINAL INTERFACES ---
 interface RecipeStep {
+  step?: number;
   action: string;
-  temperature: number;
-  weight: number;
-  time: number;
-  motor: boolean;
-  stove_on: string;
+  time?: number;
+  ingredient?: string;
+  temperature?: number;
+  weight?: number;
+  motor?: boolean;
+  stove_on?: string;
 }
 
 interface Recipe {
   id: string;
   name: string;
-  steps: RecipeStep[];
-  createdAt: string;
+  steps?: RecipeStep[] | string;
+  createdAt?: string;
 }
 
 export default function RecipePage() {
-  // --- ORIGINAL STATE ---
+  const { showToast } = useToast();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Dialog State
   const [openDialog, setOpenDialog] = useState(false);
   const [recipeName, setRecipeName] = useState("");
   const [steps, setSteps] = useState<RecipeStep[]>([
@@ -59,6 +61,10 @@ export default function RecipePage() {
       stove_on: "off",
     },
   ]);
+
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [recipeToDelete, setRecipeToDelete] = useState<string | null>(null);
 
   const actionOptions = [
     "turn_on",
@@ -92,26 +98,55 @@ export default function RecipePage() {
     }
   };
 
-  const sendToESP32 = useCallback(async (recipeId: string) => {
-    try {
-      const result = await apiClient.post<{ recipe_name: string }>(
-        `/execute-recipe/${recipeId}`
-      );
-      alert(`Recipe "${result.recipe_name}" sent to ESP32 successfully!`);
-    } catch (error) {
-      console.error("Error sending recipe to ESP32:", error);
-      const message = error instanceof Error ? error.message : "Error sending recipe to ESP32";
-      alert(`Failed to send recipe: ${message}`);
-    }
-  }, []);
+  const sendToESP32 = useCallback(
+    async (recipeId: string) => {
+      try {
+        const recipe = recipes.find((r) => r.id === recipeId);
+        if (
+          recipe &&
+          (!recipe.steps ||
+            !Array.isArray(recipe.steps) ||
+            recipe.steps.length === 0)
+        ) {
+          showToast("Cannot execute recipe without steps", "error");
+          return;
+        }
+
+        const result = await apiClient.post<{ recipe_name: string }>(
+          `/execute-recipe/${recipeId}`
+        );
+        showToast(
+          `Recipe "${result.recipe_name}" sent to ESP32 successfully!`,
+          "success"
+        );
+      } catch (error) {
+        console.error("Error sending recipe to ESP32:", error);
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Error sending recipe to ESP32";
+        showToast(`Failed to send recipe: ${message}`, "error");
+      }
+    },
+    [recipes, showToast]
+  );
 
   const handleSubmit = async () => {
     try {
-      await apiClient.post("/recipes", {
-        recipe: recipeName,
-        steps: steps,
-      });
-      
+      if (editingRecipe) {
+        await apiClient.put(`/recipes/${editingRecipe.id}`, {
+          recipe: recipeName,
+          steps: steps,
+        });
+        showToast("Recipe updated successfully", "success");
+      } else {
+        await apiClient.post("/recipes", {
+          recipe: recipeName,
+          steps: steps,
+        });
+        showToast("Recipe created successfully", "success");
+      }
+
       setOpenDialog(false);
       setRecipeName("");
       setSteps([
@@ -124,10 +159,13 @@ export default function RecipePage() {
           stove_on: "off",
         },
       ]);
+      setEditingRecipe(null);
       fetchRecipes();
     } catch (error) {
-      console.error("Error creating recipe:", error);
-      alert("Failed to create recipe");
+      console.error("Error saving recipe:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to save recipe";
+      showToast(message, "error");
     }
   };
 
@@ -169,7 +207,71 @@ export default function RecipePage() {
       ),
     [recipes, searchTerm]
   );
-  // -----------------------------
+
+  const handleEdit = async (recipe: Recipe) => {
+    try {
+      const fullRecipe = await apiClient.get<Recipe>(`/recipe/${recipe.id}`);
+      setEditingRecipe(fullRecipe);
+      setRecipeName(fullRecipe.name);
+      const recipeSteps = Array.isArray(fullRecipe.steps)
+        ? fullRecipe.steps
+        : [];
+      setSteps(
+        recipeSteps.length > 0
+          ? recipeSteps
+          : [
+              {
+                action: "",
+                temperature: 0,
+                weight: 0,
+                time: 0,
+                motor: false,
+                stove_on: "off",
+              },
+            ]
+      );
+      setOpenDialog(true);
+    } catch (error) {
+      console.error("Error loading recipe:", error);
+      showToast("Failed to load recipe details", "error");
+    }
+  };
+
+  const handleDeleteClick = (recipeId: string) => {
+    setRecipeToDelete(recipeId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!recipeToDelete) return;
+
+    try {
+      await apiClient.delete(`/recipes/${recipeToDelete}`);
+      showToast("Recipe deleted successfully", "success");
+      setDeleteDialogOpen(false);
+      setRecipeToDelete(null);
+      fetchRecipes();
+    } catch (error) {
+      console.error("Error deleting recipe:", error);
+      showToast("Failed to delete recipe", "error");
+    }
+  };
+
+  const handleDialogClose = () => {
+    setOpenDialog(false);
+    setRecipeName("");
+    setSteps([
+      {
+        action: "",
+        temperature: 0,
+        weight: 0,
+        time: 0,
+        motor: false,
+        stove_on: "off",
+      },
+    ]);
+    setEditingRecipe(null);
+  };
 
   return (
     <Box>
@@ -260,7 +362,12 @@ export default function RecipePage() {
                   style={{ transitionDelay: `${index * 50}ms` }}
                 >
                   <Box height="100%">
-                    <RecipeCard recipe={recipe} onSendToESP32={sendToESP32} />
+                    <RecipeCard
+                      recipe={recipe}
+                      onSendToESP32={sendToESP32}
+                      onDelete={handleDeleteClick}
+                      onEdit={handleEdit}
+                    />
                   </Box>
                 </Fade>
               </Grid>
@@ -269,10 +376,9 @@ export default function RecipePage() {
         </Grid>
       )}
 
-      {/* CREATE RECIPE DIALOG (Restored Logic, New Design) */}
       <Dialog
         open={openDialog}
-        onClose={() => setOpenDialog(false)}
+        onClose={handleDialogClose}
         maxWidth="md"
         fullWidth
         PaperProps={{ sx: { borderRadius: 4, p: 2 } }}
@@ -286,9 +392,9 @@ export default function RecipePage() {
           }}
         >
           <Typography variant="h5" component="div" fontWeight={700}>
-            New Recipe
+            {editingRecipe ? "Edit Recipe" : "New Recipe"}
           </Typography>
-          <IconButton onClick={() => setOpenDialog(false)}>
+          <IconButton onClick={handleDialogClose}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
@@ -448,10 +554,7 @@ export default function RecipePage() {
         <DialogActions
           sx={{ p: 3, borderTop: "1px solid", borderColor: "divider" }}
         >
-          <Button
-            onClick={() => setOpenDialog(false)}
-            sx={{ color: "text.secondary" }}
-          >
+          <Button onClick={handleDialogClose} sx={{ color: "text.secondary" }}>
             Cancel
           </Button>
           <Button
@@ -461,7 +564,38 @@ export default function RecipePage() {
             disabled={!recipeName}
             sx={{ borderRadius: 3, px: 4 }}
           >
-            Create Recipe
+            {editingRecipe ? "Update Recipe" : "Create Recipe"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, p: 2 } }}
+      >
+        <DialogTitle sx={{ fontWeight: "bold" }}>Delete Recipe</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this recipe? This action cannot be
+            undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button
+            onClick={() => setDeleteDialogOpen(false)}
+            sx={{ color: "text.secondary" }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            variant="contained"
+            color="error"
+          >
+            Delete
           </Button>
         </DialogActions>
       </Dialog>

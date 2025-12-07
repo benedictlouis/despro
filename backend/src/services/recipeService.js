@@ -86,6 +86,43 @@ class RecipeService {
       timestamp: new Date().toISOString(),
     };
   }
+
+  async deleteRecipe(id) {
+    const recipe = await this.getRecipeById(id);
+
+    if (!recipe) {
+      return null;
+    }
+
+    await database.query("DELETE FROM recipes WHERE id = $1", [id]);
+
+    return recipe;
+  }
+
+  async updateRecipe(id, recipeName, steps) {
+    const recipe = await this.getRecipeById(id);
+
+    if (!recipe) {
+      return null;
+    }
+
+    const validation = validateRecipeSteps(steps);
+
+    if (!validation.isValid) {
+      throw new Error(validation.error);
+    }
+
+    await database.query(
+      "UPDATE recipes SET name = $1, steps = $2 WHERE id = $3",
+      [recipeName, JSON.stringify(steps), id]
+    );
+
+    return {
+      id,
+      name: recipeName,
+      steps: normalizeRecipeSteps(steps),
+    };
+  }
 }
 
 module.exports = new RecipeService();

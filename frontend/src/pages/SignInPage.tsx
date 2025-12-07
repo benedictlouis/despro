@@ -136,22 +136,11 @@ export default function SignInPage() {
               py: 1.5,
               fontSize: "1rem",
               fontWeight: "bold",
-              mb: 3,
               borderRadius: 3,
             }}
           >
             {loading ? <CircularProgress size={24} /> : "Sign In"}
           </Button>
-
-          <Typography variant="body2" color="text.secondary">
-            Don't have an account?{" "}
-            <Box
-              component="span"
-              sx={{ color: "primary.main", cursor: "pointer", fontWeight: 600 }}
-            >
-              Sign Up
-            </Box>
-          </Typography>
         </Box>
       </Paper>
     </Box>
