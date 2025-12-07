@@ -1,27 +1,18 @@
-// components/Navbar.tsx
-import { AppBar, Toolbar, IconButton, Typography } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
+import { Box } from "@mui/material";
 
-interface NavbarProps {
-  onToggle: () => void;
-}
-
-export default function Navbar({ onToggle }: NavbarProps) {
+export default function Navbar() {
   return (
-    <AppBar position="fixed" sx={{ zIndex: 1201 }}>
-      <Toolbar>
-        <IconButton
-          color="inherit"
-          edge="start"
-          onClick={onToggle}
-          sx={{ mr: 2, outline: 'none', boxShadow: 'none', '&:focus': { outline: 'none', boxShadow: 'none' } }}
-        >
-          <MenuIcon />
-        </IconButton>
-        <Typography variant="h6" noWrap>
-          Despro
-        </Typography>
-      </Toolbar>
-    </AppBar>
+    <Box
+      component="header"
+      sx={{
+        py: 3,
+        px: { xs: 2, md: 3, lg: 4 },
+        display: "flex",
+        justifyContent: "flex-end",
+        alignItems: "center",
+      }}
+    >
+      {/* Navbar content removed as requested (theme switcher) */}
+    </Box>
   );
 }

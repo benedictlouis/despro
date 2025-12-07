@@ -1,11 +1,13 @@
 /* Dashboard specific styles */
 .dashboard-card {
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .dashboard-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.1);
 }
 
 .chart-container {
@@ -14,32 +16,42 @@
 }
 
 .stat-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  /* background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%); */
+  /* color: white; */
+  border-radius: 12px;
+  /* box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3); */
 }
 
 .device-card {
-  border-left: 4px solid #1976d2;
+  border-left: 4px solid #6366f1;
 }
 
 .device-card.online {
-  border-left-color: #2e7d32;
+  border-left-color: #10b981;
 }
 
 .device-card.offline {
-  border-left-color: #d32f2f;
+  border-left-color: #ef4444;
 }
 
 /* Recharts customization */
 .recharts-wrapper {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .recharts-cartesian-axis-tick-value {
   font-size: 12px;
+  fill: #64748b;
 }
 
 .recharts-tooltip-wrapper {
-  border-radius: 8px;
+  border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: none !important;
+}
+
+.recharts-default-tooltip {
+  border-radius: 12px !important;
+  border: none !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
 }
