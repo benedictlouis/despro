@@ -8,6 +8,7 @@ import {
   Typography,
   Stack,
 } from "@mui/material";
+import { useAuth } from "../contexts/AuthContext";
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -21,11 +22,13 @@ export default function Sidebar({
   drawerWidth,
 }: SidebarProps) {
   const location = useLocation();
+  const { user } = useAuth();
 
   const menuItems = [
     { text: "Home", path: "/" },
     { text: "Dashboard", path: "/dashboard" },
     { text: "Recipes", path: "/recipes" },
+    ...(user?.role === "admin" ? [{ text: "Users", path: "/users" }] : []),
   ];
 
   const drawerContent = (

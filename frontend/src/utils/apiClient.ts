@@ -159,6 +159,18 @@ export const authApi = {
   async getMe() {
     return apiClient.get<{ user: { sub: string; username: string; role: string } }>("/me");
   },
+
+  async getAllUsers() {
+    return apiClient.get<{ users: Array<{ id: string; username: string; role: string; created_at: string }>; total: number }>("/users");
+  },
+
+  async deleteUser(userId: string) {
+    return apiClient.delete<{ message: string }>(`/users/${userId}`);
+  },
+
+  async createUser(username: string, password: string, role: string) {
+    return apiClient.post<{ message: string; user: { id: string; username: string; role: string; created_at: string } }>("/users", { username, password, role });
+  },
 };
 
 export default apiClient;

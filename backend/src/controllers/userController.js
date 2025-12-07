@@ -309,6 +309,120 @@ class UserController {
     }
   }
 
+  async getAllUsers(req, res) {
+    try {
+      const result = await database.query(
+        "SELECT id, username, role, created_at FROM users ORDER BY created_at DESC"
+      );
+
+      res.status(HTTP_STATUS.OK).json({
+        users: result.rows,
+        total: result.rowCount,
+      });
+    } catch (error) {
+      console.error("Get all users error:", error);
+      res
+        .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+        .json({ error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+    }
+  }
+
+  async deleteUser(req, res) {
+    try {
+      const { id } = req.params;
+
+      if (!id) {
+        return res
+          .status(HTTP_STATUS.BAD_REQUEST)
+          .json({ error: "User ID is required" });
+      }
+
+      // Prevent admin from deleting themselves
+      if (req.user.sub === id) {
+        return res
+          .status(HTTP_STATUS.BAD_REQUEST)
+          .json({ error: "Cannot delete your own account" });
+      }
+
+      // Check if user exists
+      const userCheck = await database.query(
+        "SELECT id FROM users WHERE id = $1",
+        [id]
+      );
+
+      if (userCheck.rowCount === 0) {
+        return res
+          .status(HTTP_STATUS.NOT_FOUND)
+          .json({ error: ERROR_MESSAGES.USER_NOT_FOUND });
+      }
+
+      // Delete user (refresh tokens will be cascade deleted)
+      await database.query("DELETE FROM users WHERE id = $1", [id]);
+
+      res.status(HTTP_STATUS.OK).json({
+        message: "User deleted successfully",
+      });
+    } catch (error) {
+      console.error("Delete user error:", error);
+      res
+        .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+        .json({ error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+    }
+  }
+
+  async adminCreateUser(req, res) {
+    try {
+      const { username, password, role } = req.body;
+
+      if (!username || !password) {
+        return res
+          .status(HTTP_STATUS.BAD_REQUEST)
+          .json({ error: ERROR_MESSAGES.USERNAME_PASSWORD_REQUIRED });
+      }
+
+      // Validate role
+      const validRoles = ["user", "admin"];
+      const userRole = role || "user";
+      if (!validRoles.includes(userRole)) {
+        return res
+          .status(HTTP_STATUS.BAD_REQUEST)
+          .json({ error: "Invalid role. Must be 'user' or 'admin'" });
+      }
+
+      // Check if user exists
+      const existing = await database.query(
+        "SELECT id FROM users WHERE username = $1",
+        [username]
+      );
+
+      if (existing.rowCount > 0) {
+        return res
+          .status(HTTP_STATUS.CONFLICT)
+          .json({ error: ERROR_MESSAGES.USERNAME_ALREADY_EXISTS });
+      }
+
+      const passwordHash = await bcrypt.hash(password, 10);
+
+      // Insert user
+      const result = await database.query(
+        "INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, role, created_at",
+        [username, passwordHash, userRole]
+      );
+
+      const newUser = result.rows[0];
+
+      res.status(HTTP_STATUS.CREATED).json({
+        message: "User created successfully",
+        user: newUser,
+      });
+    } catch (error) {
+      console.error("Admin create user error:", error);
+      res
+        .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+        .json({ error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+    }
+  }
+
   // Cleanup expired refresh tokens
   async cleanupExpiredTokens() {
     try {

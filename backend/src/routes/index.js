@@ -4,6 +4,7 @@ const mqttController = require("../controllers/mqttController");
 const healthController = require("../controllers/healthController");
 const userController = require("../controllers/userController");
 const authenticate = require("../middleware/authenticate");
+const adminOnly = require("../middleware/adminOnly");
 
 const setupRoutes = (app) => {
   // User routes
@@ -12,6 +13,9 @@ const setupRoutes = (app) => {
   app.post("/refresh", userController.refreshToken.bind(userController));
   app.post("/logout", userController.logout.bind(userController));
   app.get("/me", authenticate, userController.getMe.bind(userController));
+  app.get("/users", authenticate, adminOnly, userController.getAllUsers.bind(userController));
+  app.post("/users", authenticate, adminOnly, userController.adminCreateUser.bind(userController));
+  app.delete("/users/:id", authenticate, adminOnly, userController.deleteUser.bind(userController));
 
   // Recipe routes
   app.get("/recipes", recipeController.getAllRecipes.bind(recipeController));

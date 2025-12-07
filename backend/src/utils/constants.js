@@ -29,6 +29,8 @@ const ERROR_MESSAGES = {
   REFRESH_TOKEN_REQUIRED: "Refresh token is required",
   INVALID_REFRESH_TOKEN: "Invalid or expired refresh token",
   USER_NOT_FOUND: "User not found",
+  UNAUTHORIZED: "Unauthorized",
+  ACCESS_DENIED: "Access denied. Admin privileges required.",
   
   // General errors
   ROUTE_NOT_FOUND: "Route not found",
