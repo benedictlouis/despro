@@ -1,4 +1,5 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   TextField,
@@ -7,12 +8,41 @@ import {
   Checkbox,
   FormControlLabel,
   Paper,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function SignInPage() {
+  const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      await login(username, password);
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box
@@ -53,13 +83,20 @@ export default function SignInPage() {
           Sajipati
         </Typography>
 
-        <Box component="form">
+        <Box component="form" onSubmit={handleSubmit}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          )}
           <TextField
             fullWidth
             label="Username"
             variant="outlined"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            disabled={loading}
+            required
             sx={{ mb: 3 }}
           />
 
@@ -70,6 +107,8 @@ export default function SignInPage() {
             variant="outlined"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+            required
             sx={{ mb: 3 }}
           />
 
@@ -80,6 +119,7 @@ export default function SignInPage() {
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                   color="primary"
+                  disabled={loading}
                 />
               }
               label="Remember me"
@@ -90,6 +130,8 @@ export default function SignInPage() {
             fullWidth
             variant="contained"
             size="large"
+            type="submit"
+            disabled={loading}
             sx={{
               py: 1.5,
               fontSize: "1rem",
@@ -98,7 +140,7 @@ export default function SignInPage() {
               borderRadius: 3,
             }}
           >
-            Sign In
+            {loading ? <CircularProgress size={24} /> : "Sign In"}
           </Button>
 
           <Typography variant="body2" color="text.secondary">

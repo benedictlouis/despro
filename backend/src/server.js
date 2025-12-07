@@ -13,6 +13,9 @@ class Server {
 
   async initialize() {
     try {
+      const { validateJWTEnvironment } = require("./utils/authTokens");
+      validateJWTEnvironment();
+
       await database.testConnection();
 
       await mqttClient.connect();

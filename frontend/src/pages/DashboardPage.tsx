@@ -31,9 +31,7 @@ import {
   Area,
   AreaChart,
 } from "recharts";
-import config from "../utils/config";
-
-const API_BASE_URL = config.API_BASE_URL;
+import apiClient from "../utils/apiClient";
 
 // Sample data - replace with real API calls
 const recipeUsageData = [
@@ -103,26 +101,14 @@ export default function DashboardPage() {
     setLoading(true);
     try {
       // Fetch total recipes from API
-      const response = await fetch(`${API_BASE_URL}/recipes`);
-      if (response.ok) {
-        const recipes = await response.json();
+      const recipes = await apiClient.get<Array<{ id: string }>>("/recipes");
 
-        setStats({
-          totalRecipes: recipes.length, // Get actual count from API
-          activeDevices: 3,
-          todaysCookings: 25,
-          successRate: 92.5,
-        });
-      } else {
-        console.error("Failed to fetch recipes");
-        // Fallback to default values
-        setStats({
-          totalRecipes: 0,
-          activeDevices: 3,
-          todaysCookings: 25,
-          successRate: 92.5,
-        });
-      }
+      setStats({
+        totalRecipes: recipes.length, // Get actual count from API
+        activeDevices: 3,
+        todaysCookings: 25,
+        successRate: 92.5,
+      });
     } catch (error) {
       console.error("Error fetching stats:", error);
       // Fallback to default values
@@ -140,35 +126,21 @@ export default function DashboardPage() {
   const handleSendMenuToMQTT = async () => {
     setSendingMenu(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/send-menu`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const data = await apiClient.post<{ total: number }>("/send-menu");
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setSnackbar({
-          open: true,
-          message: `Successfully sent ${data.total} recipes to MQTT broker!`,
-          severity: "success",
-        });
-        // Refresh stats after sending menu
-        fetchStats();
-      } else {
-        setSnackbar({
-          open: true,
-          message: data.error || "Failed to send menu to MQTT",
-          severity: "error",
-        });
-      }
-    } catch (error) {
-      console.error("Error sending menu:", error);
       setSnackbar({
         open: true,
-        message: "Network error. Failed to send menu to MQTT.",
+        message: `Successfully sent ${data.total} recipes to MQTT broker!`,
+        severity: "success",
+      });
+      // Refresh stats after sending menu
+      fetchStats();
+    } catch (error) {
+      console.error("Error sending menu:", error);
+      const message = error instanceof Error ? error.message : "Failed to send menu to MQTT";
+      setSnackbar({
+        open: true,
+        message,
         severity: "error",
       });
     } finally {

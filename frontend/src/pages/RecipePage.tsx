@@ -21,7 +21,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import RecipeCard from "../components/RecipeCard";
-import config from "../utils/config";
+import apiClient from "../utils/apiClient";
 
 // --- ORIGINAL INTERFACES ---
 interface RecipeStep {
@@ -39,8 +39,6 @@ interface Recipe {
   steps: RecipeStep[];
   createdAt: string;
 }
-
-const API_BASE_URL = config.API_BASE_URL;
 
 export default function RecipePage() {
   // --- ORIGINAL STATE ---
@@ -85,13 +83,8 @@ export default function RecipePage() {
   const fetchRecipes = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/recipes`);
-      if (response.ok) {
-        const data = await response.json();
-        setRecipes(data);
-      } else {
-        console.error("Failed to fetch recipes");
-      }
+      const data = await apiClient.get<Recipe[]>("/recipes");
+      setRecipes(data);
     } catch (error) {
       console.error("Error fetching recipes:", error);
     } finally {
@@ -101,56 +94,40 @@ export default function RecipePage() {
 
   const sendToESP32 = useCallback(async (recipeId: string) => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/execute-recipe/${recipeId}`,
-        {
-          method: "POST",
-        }
+      const result = await apiClient.post<{ recipe_name: string }>(
+        `/execute-recipe/${recipeId}`
       );
-
-      if (response.ok) {
-        const result = await response.json();
-        alert(`Recipe "${result.recipe_name}" sent to ESP32 successfully!`);
-      } else {
-        const error = await response.json();
-        alert(`Failed to send recipe: ${error.error}`);
-      }
+      alert(`Recipe "${result.recipe_name}" sent to ESP32 successfully!`);
     } catch (error) {
       console.error("Error sending recipe to ESP32:", error);
-      alert("Error sending recipe to ESP32");
+      const message = error instanceof Error ? error.message : "Error sending recipe to ESP32";
+      alert(`Failed to send recipe: ${message}`);
     }
   }, []);
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/recipes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          recipe: recipeName,
-          steps: steps,
-        }),
+      await apiClient.post("/recipes", {
+        recipe: recipeName,
+        steps: steps,
       });
-
-      if (response.ok) {
-        setOpenDialog(false);
-        setRecipeName("");
-        setSteps([
-          {
-            action: "",
-            temperature: 0,
-            weight: 0,
-            time: 0,
-            motor: false,
-            stove_on: "off",
-          },
-        ]);
-        fetchRecipes();
-      } else {
-        console.error("Failed to create recipe");
-      }
+      
+      setOpenDialog(false);
+      setRecipeName("");
+      setSteps([
+        {
+          action: "",
+          temperature: 0,
+          weight: 0,
+          time: 0,
+          motor: false,
+          stove_on: "off",
+        },
+      ]);
+      fetchRecipes();
     } catch (error) {
       console.error("Error creating recipe:", error);
+      alert("Failed to create recipe");
     }
   };
 
