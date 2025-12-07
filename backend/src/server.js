@@ -19,6 +19,9 @@ class Server {
 
       await mqttService.initializeHandlers();
 
+      const userController = require("./controllers/userController");
+      await userController.cleanupExpiredTokens();
+
       console.log("Server initialization completed successfully");
     } catch (error) {
       console.error("Server initialization failed:", error);
