@@ -16,10 +16,12 @@ const config = {
     url: process.env.MQTT_URL || "mqtt://mqtt.nomaden.cloud:1883",
     baseTopic: process.env.MQTT_BASE_TOPIC || "sajipati",
     topics: {
-      espRequest: "sajipati/esp/request",
-      webMenus: "sajipati/web/menus",
-      webRecipeSteps: "sajipati/web/recipe/steps",
-      recipeExecute: "sajipati/recipe/execute",
+      espInit: "sajipati/esp/init",
+      espRequestMenu: "sajipati/esp/request/menu",
+      espRequestMenuDetail: "sajipati/esp/request/menu/detail",
+      espStatus: "sajipati/esp/status",
+      webMenu: "sajipati/web/menu",
+      webMenuDetail: "sajipati/web/menu/detail",
     },
   },
 };

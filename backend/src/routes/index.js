@@ -45,10 +45,6 @@ const setupRoutes = (app) => {
 
   // MQTT routes
   app.post("/send-menu", mqttController.sendMenu.bind(mqttController));
-  app.post(
-    "/execute-recipe/:id",
-    mqttController.executeRecipe.bind(mqttController)
-  );
 
   // ESP Device routes
   app.get(
@@ -98,10 +94,6 @@ const setupRoutes = (app) => {
     recipeController.createRecipe.bind(recipeController)
   );
   app.post("/api/mqtt/send-menu", mqttController.sendMenu.bind(mqttController));
-  app.post(
-    "/api/mqtt/execute-recipe/:id",
-    mqttController.executeRecipe.bind(mqttController)
-  );
   app.get("/api/health", healthController.getHealth.bind(healthController));
 };
 

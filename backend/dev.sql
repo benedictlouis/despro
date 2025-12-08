@@ -29,22 +29,19 @@ CREATE TABLE public.recipes (
 #esp_devices table
 CREATE TABLE public.esp_devices (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT UNIQUE NOT NULL,
+  device_id TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'idle',
-  current_recipe_id UUID REFERENCES recipes(id) ON DELETE SET NULL,
-  current_step INTEGER,
+  current_menu_id UUID REFERENCES recipes(id) ON DELETE SET NULL,
+  current_step INTEGER DEFAULT 0,
   last_seen TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-#recipe_executions table
-CREATE TABLE public.recipe_executions (
+#recipe_completions table
+CREATE TABLE public.recipe_completions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   esp_device_id UUID REFERENCES esp_devices(id) ON DELETE CASCADE,
   recipe_id UUID REFERENCES recipes(id) ON DELETE CASCADE,
-  started_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  completed_at TIMESTAMP WITH TIME ZONE,
-  last_step INTEGER,
-  status TEXT NOT NULL DEFAULT 'in_progress',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  completed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

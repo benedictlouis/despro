@@ -72,21 +72,6 @@ class RecipeService {
     return recipe.steps;
   }
 
-  async getRecipeForExecution(id) {
-    const recipe = await this.getRecipeById(id);
-
-    if (!recipe) {
-      return null;
-    }
-
-    return {
-      recipe_id: recipe.id,
-      recipe_name: recipe.name,
-      steps: recipe.steps,
-      timestamp: new Date().toISOString(),
-    };
-  }
-
   async deleteRecipe(id) {
     const recipe = await this.getRecipeById(id);
 
