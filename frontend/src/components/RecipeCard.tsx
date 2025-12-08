@@ -3,7 +3,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Button,
   Box,
   Dialog,
   DialogContent,
@@ -15,11 +14,11 @@ import {
   ListItemText,
   Chip,
 } from "@mui/material";
-import ArrowOutwardIcon from "@mui/icons-material/ArrowOutward";
+
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import ScaleIcon from "@mui/icons-material/Scale";
 import CloseIcon from "@mui/icons-material/Close";
-import PlayArrowIcon from "@mui/icons-material/PlayArrowRounded";
+
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import config from "../utils/config";
@@ -46,14 +45,12 @@ interface Recipe {
 
 interface RecipeCardProps {
   recipe: Recipe;
-  onSendToESP32: (recipeId: string) => void;
   onDelete: (recipeId: string) => void;
   onEdit: (recipe: Recipe) => void;
 }
 
 export default function RecipeCard({
   recipe,
-  onSendToESP32,
   onDelete,
   onEdit,
 }: RecipeCardProps) {
@@ -87,11 +84,6 @@ export default function RecipeCard({
     setDetailedSteps([]);
   };
 
-  const handleExecute = () => {
-    onSendToESP32(recipe.id);
-    handleClose();
-  };
-
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     onEdit(recipe);
@@ -102,8 +94,6 @@ export default function RecipeCard({
     onDelete(recipe.id);
   };
 
-  const hasSteps = detailedSteps.length > 0;
-
   // Helper to format date cleanly
   const formattedDate = recipe.createdAt
     ? new Date(recipe.createdAt).toLocaleDateString(undefined, {
@@ -111,7 +101,6 @@ export default function RecipeCard({
         day: "numeric",
       })
     : "";
-
   return (
     <>
       <Card
@@ -200,26 +189,6 @@ export default function RecipeCard({
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Stack>
-
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            endIcon={<ArrowOutwardIcon sx={{ fontSize: "16px !important" }} />}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleExecute();
-            }}
-            sx={{
-              borderRadius: 3,
-              py: 1.5,
-              textTransform: "none",
-              fontSize: "1rem",
-              boxShadow: "none",
-            }}
-          >
-            Cook now
-          </Button>
         </CardContent>
       </Card>
 
@@ -323,7 +292,7 @@ export default function RecipeCard({
                             size="small"
                           />
                         )}
-                        {step.temperature && step.temperature > 0 && (
+                        {!!step.temperature && step.temperature > 0 && (
                           <Chip
                             label={`${step.temperature}°C`}
                             variant="outlined"
@@ -335,18 +304,6 @@ export default function RecipeCard({
                   ))}
                 </List>
               )}
-
-              <Button
-                variant="contained"
-                size="large"
-                fullWidth
-                startIcon={<PlayArrowIcon />}
-                onClick={handleExecute}
-                disabled={!hasSteps}
-                sx={{ mt: 4, borderRadius: 50, py: 2, fontSize: "1.1rem" }}
-              >
-                {hasSteps ? "Start Cooking Process" : "No Steps Available"}
-              </Button>
             </Box>
           )}
         </DialogContent>

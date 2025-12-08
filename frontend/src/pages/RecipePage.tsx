@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Typography,
   Button,
@@ -97,39 +97,6 @@ export default function RecipePage() {
       setLoading(false);
     }
   };
-
-  const sendToESP32 = useCallback(
-    async (recipeId: string) => {
-      try {
-        const recipe = recipes.find((r) => r.id === recipeId);
-        if (
-          recipe &&
-          (!recipe.steps ||
-            !Array.isArray(recipe.steps) ||
-            recipe.steps.length === 0)
-        ) {
-          showToast("Cannot execute recipe without steps", "error");
-          return;
-        }
-
-        const result = await apiClient.post<{ recipe_name: string }>(
-          `/execute-recipe/${recipeId}`
-        );
-        showToast(
-          `Recipe "${result.recipe_name}" sent to ESP32 successfully!`,
-          "success"
-        );
-      } catch (error) {
-        console.error("Error sending recipe to ESP32:", error);
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Error sending recipe to ESP32";
-        showToast(`Failed to send recipe: ${message}`, "error");
-      }
-    },
-    [recipes, showToast]
-  );
 
   const handleSubmit = async () => {
     try {
@@ -364,7 +331,6 @@ export default function RecipePage() {
                   <Box height="100%">
                     <RecipeCard
                       recipe={recipe}
-                      onSendToESP32={sendToESP32}
                       onDelete={handleDeleteClick}
                       onEdit={handleEdit}
                     />

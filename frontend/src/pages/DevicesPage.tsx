@@ -24,10 +24,11 @@ import apiClient from "../utils/apiClient";
 
 interface EspDevice {
   id: string;
+  device_id: string;
   name: string;
   status: string;
-  current_recipe_id: string | null;
-  recipe_name: string | null;
+  current_menu_id: string | null;
+  current_menu_name: string | null;
   current_step: number | null;
   last_seen: string;
   created_at: string;
@@ -238,7 +239,7 @@ export default function DevicesPage() {
                     Device ID:
                   </Typography>
                   <Typography variant="body1" fontWeight={600}>
-                    {selectedDevice.id}
+                    {selectedDevice.device_id}
                   </Typography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
@@ -272,11 +273,11 @@ export default function DevicesPage() {
               </Stack>
 
               {selectedDevice.status === "active" &&
-                selectedDevice.recipe_name && (
+                selectedDevice.current_menu_name && (
                   <>
                     <Divider sx={{ mb: 3 }} />
                     <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                      Current Recipe
+                      Current Menu
                     </Typography>
 
                     <Card
@@ -292,26 +293,30 @@ export default function DevicesPage() {
                       <Stack spacing={2}>
                         <Box>
                           <Typography variant="h5" fontWeight={700}>
-                            {selectedDevice.recipe_name}
+                            {selectedDevice.current_menu_name}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            Recipe ID: {selectedDevice.current_recipe_id}
+                            Menu ID: {selectedDevice.current_menu_id}
                           </Typography>
                         </Box>
-                        {selectedDevice.current_step && (
-                          <Box>
-                            <Typography variant="body2" color="text.secondary">
-                              Current Step:
-                            </Typography>
-                            <Typography
-                              variant="h4"
-                              fontWeight={700}
-                              color="primary"
-                            >
-                              Step {selectedDevice.current_step}
-                            </Typography>
-                          </Box>
-                        )}
+                        {selectedDevice.current_step !== null &&
+                          selectedDevice.current_step > 0 && (
+                            <Box>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                Current Step:
+                              </Typography>
+                              <Typography
+                                variant="h4"
+                                fontWeight={700}
+                                color="primary"
+                              >
+                                Step {selectedDevice.current_step}
+                              </Typography>
+                            </Box>
+                          )}
                         <Button
                           variant="outlined"
                           startIcon={<LinkIcon />}

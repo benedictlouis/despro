@@ -6,7 +6,7 @@ export const useDashboardStats = () => {
     totalRecipes: 0,
     activeDevices: 0,
     todaysCookings: 0,
-    successRate: 0,
+    totalCompletions: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -16,7 +16,7 @@ export const useDashboardStats = () => {
         totalRecipes: number;
         activeDevices: number;
         todaysCookings: number;
-        successRate: number;
+        totalCompletions: number;
       }>("/dashboard/stats");
       setStats(data);
     } catch (error) {
@@ -67,9 +67,9 @@ export const useCookingStatus = () => {
         Array<{ status: string; value: number }>
       >("/dashboard/cooking-status");
       const statusMapping: Record<string, string> = {
-        completed: "Completed",
-        in_progress: "In Progress",
-        interrupted: "Interrupted",
+        active: "Active",
+        idle: "Idle",
+        offline: "Offline",
       };
       const formatted = result.map((item) => ({
         name: statusMapping[item.status] || item.status,
@@ -91,20 +91,17 @@ export const useCookingStatus = () => {
 };
 
 export const useDailyActivity = (days: number = 7) => {
-  const [data, setData] = useState<
-    Array<{ day: string; recipes: number; actions: number }>
-  >([]);
+  const [data, setData] = useState<Array<{ day: string; recipes: number }>>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     try {
       const result = await apiClient.get<
-        Array<{ day: string; recipes: number; actions: number }>
+        Array<{ day: string; recipes: number }>
       >(`/dashboard/daily-activity?days=${days}`);
       const formatted = result.map((item) => ({
         day: item.day,
         recipes: parseInt(item.recipes.toString()),
-        actions: parseInt(item.actions.toString()) || 0,
       }));
       setData(formatted);
     } catch (error) {

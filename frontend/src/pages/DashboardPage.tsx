@@ -150,7 +150,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth="xl" style={{ overflowY: "auto" }}>
       <Box
         mb={4}
         display="flex"
@@ -210,11 +210,10 @@ export default function DashboardPage() {
         </Box>
         <Box sx={{ flex: "1 1 250px", minWidth: "250px" }}>
           <StatCard
-            title="Success Rate"
-            value={`${stats.successRate}%`}
-            subtitle="Recipe completion rate"
-            color="#00C49F"
-            progress={stats.successRate}
+            title="Total Completions"
+            value={stats.totalCompletions}
+            subtitle="All-time recipe completions"
+            color="#9c27b0"
           />
         </Box>
       </Box>
@@ -276,8 +275,8 @@ export default function DashboardPage() {
             }}
           >
             <CardHeader
-              title="Cooking Status Distribution"
-              subheader="Recipe execution results"
+              title="Device Status"
+              subheader="Current device distribution"
             />
             <CardContent>
               {cookingStatusData.length === 0 ? (
@@ -357,7 +356,7 @@ export default function DashboardPage() {
           >
             <CardHeader
               title="Weekly Activity"
-              subheader="Daily recipes and actions executed"
+              subheader="Daily recipe completions"
             />
             <CardContent>
               {dailyActivityData.length === 0 ? (
@@ -384,15 +383,7 @@ export default function DashboardPage() {
                       stroke="#8884d8"
                       strokeWidth={3}
                       dot={{ fill: "#8884d8", strokeWidth: 2, r: 5 }}
-                      name="Recipes"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="actions"
-                      stroke="#82ca9d"
-                      strokeWidth={3}
-                      dot={{ fill: "#82ca9d", strokeWidth: 2, r: 5 }}
-                      name="Actions"
+                      name="Recipes Completed"
                     />
                   </LineChart>
                 </ResponsiveContainer>
