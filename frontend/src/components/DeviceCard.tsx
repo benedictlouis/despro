@@ -10,10 +10,11 @@ import {
 
 interface EspDevice {
   id: string;
+  device_id: string;
   name: string;
   status: string;
-  current_recipe_id: string | null;
-  recipe_name: string | null;
+  current_menu_id: string | null;
+  current_menu_name: string | null;
   current_step: number | null;
   last_seen: string;
   created_at: string;
@@ -58,8 +59,8 @@ const getLastSeen = (lastSeen: string) => {
 };
 
 const getDeviceStatusText = (device: EspDevice) => {
-  if (device.status === "active" && device.recipe_name) {
-    return `Processing: ${device.recipe_name}`;
+  if (device.status === "active" && device.current_menu_name) {
+    return `Processing: ${device.current_menu_name}`;
   }
   if (device.status === "idle") {
     return "Ready for recipes";
@@ -141,16 +142,18 @@ export default function DeviceCard({ device, onClick }: DeviceCardProps) {
               {getLastSeen(device.last_seen)}
             </Typography>
           </Box>
-          {device.status === "active" && device.current_step && (
-            <Box display="flex" justifyContent="space-between">
-              <Typography variant="body2" color="text.secondary">
-                Current step:
-              </Typography>
-              <Typography variant="body2" fontWeight={600}>
-                {device.current_step}
-              </Typography>
-            </Box>
-          )}
+          {device.status === "active" &&
+            device.current_step !== null &&
+            device.current_step > 0 && (
+              <Box display="flex" justifyContent="space-between">
+                <Typography variant="body2" color="text.secondary">
+                  Current step:
+                </Typography>
+                <Typography variant="body2" fontWeight={600}>
+                  {device.current_step}
+                </Typography>
+              </Box>
+            )}
         </Stack>
       </CardContent>
     </Card>
