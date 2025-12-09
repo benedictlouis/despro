@@ -62,25 +62,6 @@ export default function RecipePage() {
     },
   ]);
 
-  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [recipeToDelete, setRecipeToDelete] = useState<string | null>(null);
-
-  const actionOptions = [
-    "turn_on",
-    "turn_off",
-    "wait",
-    "stir",
-    "crack",
-    "fry",
-    "set_temperature",
-    "add",
-    "mix",
-    "boil",
-    "bake",
-    "serve",
-  ];
-
   // --- ORIGINAL LOGIC RESTORED ---
   useEffect(() => {
     fetchRecipes();
@@ -425,7 +406,6 @@ export default function RecipePage() {
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
-                    select
                     label="Action"
                     fullWidth
                     size="small"
@@ -433,13 +413,7 @@ export default function RecipePage() {
                     onChange={(e) =>
                       handleStepChange(index, "action", e.target.value)
                     }
-                  >
-                    {actionOptions.map((option) => (
-                      <MenuItem key={option} value={option}>
-                        {option.replace(/_/g, " ").toUpperCase()}
-                      </MenuItem>
-                    ))}
-                  </TextField>
+                  />
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>
                   <TextField
