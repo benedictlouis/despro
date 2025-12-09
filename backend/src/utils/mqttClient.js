@@ -16,8 +16,16 @@ class MQTTClient {
         console.log("Connected to MQTT broker");
         this.isConnected = true;
 
-        this.subscribe(config.mqtt.topics.espRequest, () => {
-          console.log("Subscribed to get request from ESP");
+        this.subscribe(config.mqtt.topics.espInit, () => {
+          console.log("Subscribed to ESP init topic");
+        });
+
+        this.subscribe(config.mqtt.topics.espRequestMenu, () => {
+          console.log("Subscribed to ESP request menu topic");
+        });
+
+        this.subscribe(config.mqtt.topics.espRequestMenuDetail, () => {
+          console.log("Subscribed to ESP request menu detail topic");
         });
 
         resolve();

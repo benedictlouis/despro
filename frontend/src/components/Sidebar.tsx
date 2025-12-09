@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Drawer,
   List,
@@ -7,64 +7,125 @@ import {
   Box,
   Typography,
   Stack,
+  Avatar,
+  Divider,
+  Button,
+  IconButton,
+  ListItemIcon,
+  Tooltip,
 } from "@mui/material";
+import LogoutIcon from "@mui/icons-material/Logout";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
+import PeopleIcon from "@mui/icons-material/People";
+import DevicesIcon from "@mui/icons-material/Devices";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useAuth } from "../contexts/AuthContext";
+import { useState } from "react";
 
 interface SidebarProps {
   mobileOpen: boolean;
   onClose: () => void;
   drawerWidth: number;
+  onCollapsedChange?: (collapsed: boolean) => void;
 }
 
 export default function Sidebar({
   mobileOpen,
   onClose,
   drawerWidth,
+  onCollapsedChange,
 }: SidebarProps) {
   const location = useLocation();
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const [collapsed, setCollapsed] = useState(false);
+
+  const collapsedWidth = 80;
+  const currentWidth = collapsed ? collapsedWidth : drawerWidth;
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/signin");
+  };
+
+  const toggleCollapse = () => {
+    const newCollapsed = !collapsed;
+    setCollapsed(newCollapsed);
+    if (onCollapsedChange) {
+      onCollapsedChange(newCollapsed);
+    }
+  };
 
   const menuItems = [
-    { text: "Home", path: "/" },
-    { text: "Dashboard", path: "/dashboard" },
-    { text: "Recipes", path: "/recipes" },
-    ...(user?.role === "admin" ? [{ text: "Users", path: "/users" }] : []),
+    { text: "Dashboard", path: "/dashboard", icon: <DashboardIcon /> },
+    { text: "Recipes", path: "/recipes", icon: <RestaurantMenuIcon /> },
+    { text: "Devices", path: "/devices", icon: <DevicesIcon /> },
+    ...(user?.role === "admin"
+      ? [{ text: "Users", path: "/users", icon: <PeopleIcon /> }]
+      : []),
   ];
 
   const drawerContent = (
     <Box
-      sx={{ height: "100%", display: "flex", flexDirection: "column", p: 4 }}
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        p: collapsed ? 2 : 4,
+      }}
     >
-      {/* Brand - Pure Typography, No Logos/Gradients */}
-      <Box sx={{ mb: 8, mt: 2 }}>
-        <Typography
-          variant="h4"
+      <Box
+        sx={{
+          mb: collapsed ? 4 : 8,
+          mt: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        {!collapsed && (
+          <Box>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 800,
+                letterSpacing: "-0.02em",
+                color: "primary.main",
+              }}
+            >
+              Sajipati.
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                display: "block",
+                mt: 1,
+                color: "text.secondary",
+                fontWeight: 500,
+              }}
+            >
+              KITCHEN AUTOMATION
+            </Typography>
+          </Box>
+        )}
+        <IconButton
+          onClick={toggleCollapse}
           sx={{
-            fontWeight: 800,
-            letterSpacing: "-0.02em",
-            color: "primary.main",
+            display: { xs: "none", md: "flex" },
+            ml: collapsed ? "auto" : 0,
           }}
         >
-          Sajipati.
-        </Typography>
-        <Typography
-          variant="caption"
-          sx={{
-            display: "block",
-            mt: 1,
-            color: "text.secondary",
-            fontWeight: 500,
-          }}
-        >
-          KITCHEN AUTOMATION
-        </Typography>
+          {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+        </IconButton>
       </Box>
 
-      {/* Navigation - Clean Links */}
       <List sx={{ px: 0 }}>
-        {menuItems.map(({ text, path }) => {
+        {menuItems.map(({ text, path, icon }) => {
           const isActive = location.pathname === path;
-          return (
+          const button = (
             <ListItemButton
               key={text}
               component={Link}
@@ -73,7 +134,7 @@ export default function Sidebar({
               sx={{
                 py: 2,
                 px: 2,
-                mx: 2,
+                mx: collapsed ? 0 : 2,
                 borderRadius: 2,
                 mb: 1,
                 border: "solid",
@@ -81,52 +142,101 @@ export default function Sidebar({
                 borderColor: "transparent",
                 bgcolor: isActive ? "action.selected" : "transparent",
                 transition: "all 0.2s ease",
+                justifyContent: collapsed ? "center" : "flex-start",
                 "&:hover": {
                   borderColor: "primary.main",
-                  transform: "translateX(4px)",
+                  transform: collapsed ? "scale(1.05)" : "translateX(4px)",
                   bgcolor: isActive ? "primary.main" : "transparent",
                 },
               }}
             >
-              <ListItemText
-                primary={text}
-                primaryTypographyProps={{
-                  variant: "h6",
-                  sx: {
-                    fontWeight: isActive ? 700 : 400,
-                    color: isActive ? "background.default" : "primary.main",
-                    transition: "all 0.2s ease",
-                    "&:hover": {
-                      color: isActive ? "background.default" : "primary.main",
-                    },
-                  },
+              <ListItemIcon
+                sx={{
+                  minWidth: collapsed ? "auto" : 56,
+                  color: isActive ? "background.default" : "primary.main",
+                  justifyContent: "center",
                 }}
-              />
+              >
+                {icon}
+              </ListItemIcon>
+              {!collapsed && (
+                <ListItemText
+                  primary={text}
+                  primaryTypographyProps={{
+                    variant: "h6",
+                    sx: {
+                      fontWeight: isActive ? 700 : 400,
+                      color: isActive ? "background.default" : "primary.main",
+                      transition: "all 0.2s ease",
+                      "&:hover": {
+                        color: isActive ? "background.default" : "primary.main",
+                      },
+                    },
+                  }}
+                />
+              )}
             </ListItemButton>
+          );
+
+          return collapsed ? (
+            <Tooltip key={text} title={text} placement="right">
+              {button}
+            </Tooltip>
+          ) : (
+            button
           );
         })}
       </List>
 
-      {/* Footer / User - Minimal */}
       <Box sx={{ mt: "auto" }}>
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Box
-            sx={{
-              width: 32,
-              height: 32,
-              bgcolor: "primary.main",
-              borderRadius: "50%",
-            }}
-          />
-          <Box>
-            <Typography variant="subtitle2" fontWeight={600}>
-              Admin
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Kitchen Lead
-            </Typography>
-          </Box>
-        </Stack>
+        <Divider sx={{ mb: 2 }} />
+        {!collapsed ? (
+          <Stack spacing={2}>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Avatar sx={{ width: 40, height: 40, bgcolor: "primary.main" }}>
+                <AccountCircleIcon />
+              </Avatar>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle2" fontWeight={600}>
+                  {user?.username}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {user?.role === "admin" ? "Administrator" : "User"}
+                </Typography>
+              </Box>
+            </Stack>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<LogoutIcon />}
+              onClick={handleLogout}
+              sx={{
+                py: 1,
+                borderColor: "divider",
+                color: "text.primary",
+                "&:hover": {
+                  borderColor: "primary.main",
+                  bgcolor: "transparent",
+                },
+              }}
+            >
+              Logout
+            </Button>
+          </Stack>
+        ) : (
+          <Stack spacing={2} alignItems="center">
+            <Tooltip title={user?.username || ""} placement="right">
+              <Avatar sx={{ width: 40, height: 40, bgcolor: "primary.main" }}>
+                <AccountCircleIcon />
+              </Avatar>
+            </Tooltip>
+            <Tooltip title="Logout" placement="right">
+              <IconButton onClick={handleLogout} color="primary">
+                <LogoutIcon />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        )}
       </Box>
     </Box>
   );
@@ -134,9 +244,8 @@ export default function Sidebar({
   return (
     <Box
       component="nav"
-      sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+      sx={{ width: { md: currentWidth }, flexShrink: { md: 0 } }}
     >
-      {/* Mobile Drawer */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
@@ -154,17 +263,17 @@ export default function Sidebar({
       >
         {drawerContent}
       </Drawer>
-      {/* Desktop Drawer */}
       <Drawer
         variant="permanent"
         sx={{
           display: { xs: "none", md: "block" },
           "& .MuiDrawer-paper": {
             boxSizing: "border-box",
-            width: drawerWidth,
+            width: currentWidth,
             borderRight: "1px solid",
             borderColor: "divider",
-            bgcolor: "background.default", // Matches page background
+            bgcolor: "background.default",
+            transition: "width 0.3s ease",
           },
         }}
         open

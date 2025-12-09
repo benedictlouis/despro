@@ -25,3 +25,23 @@ CREATE TABLE public.recipes (
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT recipes_pkey PRIMARY KEY (id)
 );
+
+#esp_devices table
+CREATE TABLE public.esp_devices (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  device_id TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'idle',
+  current_menu_id UUID REFERENCES recipes(id) ON DELETE SET NULL,
+  current_step INTEGER DEFAULT 0,
+  last_seen TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+#recipe_completions table
+CREATE TABLE public.recipe_completions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  esp_device_id UUID REFERENCES esp_devices(id) ON DELETE CASCADE,
+  recipe_id UUID REFERENCES recipes(id) ON DELETE CASCADE,
+  completed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);

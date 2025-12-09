@@ -126,7 +126,11 @@ export default function UsersPage() {
     try {
       setCreating(true);
       setCreateError(null);
-      const response = await authApi.createUser(newUsername, newPassword, newRole);
+      const response = await authApi.createUser(
+        newUsername,
+        newPassword,
+        newRole
+      );
       setUsers([response.user, ...users]);
       handleCreateCancel();
     } catch (err: any) {
@@ -212,7 +216,9 @@ export default function UsersPage() {
                 <TableCell sx={{ fontWeight: "bold" }}>Username</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>Role</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>Created At</TableCell>
-                <TableCell sx={{ fontWeight: "bold", width: 100 }}>Actions</TableCell>
+                <TableCell sx={{ fontWeight: "bold", width: 100 }}>
+                  Actions
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -225,15 +231,19 @@ export default function UsersPage() {
                     },
                   }}
                 >
-                  <TableCell sx={{ fontFamily: "monospace", fontSize: "0.85rem" }}>
+                  <TableCell
+                    sx={{ fontFamily: "monospace", fontSize: "0.85rem" }}
+                  >
                     {user.id}
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>{user.username}</TableCell>
+                  <TableCell sx={{ fontWeight: 500 }}>
+                    {user.username}
+                  </TableCell>
                   <TableCell>
                     <Chip
                       label={user.role}
                       size="small"
-                      color={user.role === "admin" ? "primary" : "default"}
+                      color={user.role === "admin" ? "primary" : "secondary"}
                       sx={{
                         fontWeight: 600,
                         textTransform: "uppercase",
@@ -250,10 +260,15 @@ export default function UsersPage() {
                       onClick={() => handleDeleteClick(user)}
                       disabled={user.id === currentUser?.id}
                       sx={{
-                        color: user.id === currentUser?.id ? "text.disabled" : "error.main",
+                        transition: "all",
+                        transitionDuration: 200,
+                        transitionTimingFunction: "ease-in-out",
+                        color:
+                          user.id === currentUser?.id
+                            ? "text.disabled"
+                            : "error.main",
                         "&:hover": {
-                          bgcolor: "error.light",
-                          color: "error.dark",
+                          scale: 0.9,
                         },
                       }}
                     >

@@ -1,13 +1,13 @@
 /* Dashboard specific styles */
 .dashboard-card {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  border: 1px solid transparent;
 }
 
 .dashboard-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.1);
+  border-color: #1976d2;
+  transform: translateX(4px);
 }
 
 .chart-container {
@@ -45,13 +45,11 @@
 }
 
 .recharts-tooltip-wrapper {
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: none !important;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
 }
 
 .recharts-default-tooltip {
-  border-radius: 12px !important;
-  border: none !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
 }

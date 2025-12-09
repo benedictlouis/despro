@@ -14,7 +14,6 @@ class Database {
     try {
       const result = await this.pool.query(text, params);
       const duration = Date.now() - start;
-      console.log("Executed query", { text, duration, rows: result.rowCount });
       return result;
     } catch (error) {
       console.error("Database query error:", error);

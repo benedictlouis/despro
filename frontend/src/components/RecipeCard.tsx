@@ -3,7 +3,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Button,
   Box,
   Dialog,
   DialogContent,
@@ -15,11 +14,13 @@ import {
   ListItemText,
   Chip,
 } from "@mui/material";
-import ArrowOutwardIcon from "@mui/icons-material/ArrowOutward";
+
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import ScaleIcon from "@mui/icons-material/Scale";
 import CloseIcon from "@mui/icons-material/Close";
-import PlayArrowIcon from "@mui/icons-material/PlayArrowRounded";
+
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import config from "../utils/config";
 
 const API_BASE_URL = config.API_BASE_URL;
@@ -44,15 +45,19 @@ interface Recipe {
 
 interface RecipeCardProps {
   recipe: Recipe;
-  onSendToESP32: (recipeId: string) => void;
+  onDelete: (recipeId: string) => void;
+  onEdit: (recipe: Recipe) => void;
 }
 
-export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
+export default function RecipeCard({
+  recipe,
+  onDelete,
+  onEdit,
+}: RecipeCardProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [detailedSteps, setDetailedSteps] = useState<RecipeStep[]>([]);
 
-  // --- ORIGINAL LOGIC RESTORED ---
   const handleCardClick = async () => {
     setOpen(true);
     setLoading(true);
@@ -79,11 +84,15 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
     setDetailedSteps([]);
   };
 
-  const handleExecute = () => {
-    onSendToESP32(recipe.id);
-    handleClose();
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit(recipe);
   };
-  // -------------------------------
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(recipe.id);
+  };
 
   // Helper to format date cleanly
   const formattedDate = recipe.createdAt
@@ -92,7 +101,6 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
         day: "numeric",
       })
     : "";
-
   return (
     <>
       <Card
@@ -156,27 +164,31 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
             </Typography>
           </Box>
 
-          {/* Action Button */}
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            endIcon={<ArrowOutwardIcon sx={{ fontSize: "16px !important" }} />}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleExecute();
-            }}
-            sx={{
-              borderRadius: 3,
-              py: 1.5,
-              textTransform: "none",
-              fontSize: "1rem",
-              mt: "auto",
-              boxShadow: "none",
-            }}
-          >
-            Cook now
-          </Button>
+          <Stack direction="row" spacing={1}>
+            <IconButton
+              size="small"
+              onClick={handleEdit}
+              sx={{
+                border: "1px solid",
+                borderColor: "divider",
+                "&:hover": { borderColor: "primary.main" },
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={handleDelete}
+              sx={{
+                border: "1px solid",
+                borderColor: "divider",
+                color: "error.main",
+                "&:hover": { borderColor: "error.main" },
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Stack>
         </CardContent>
       </Card>
 
@@ -280,7 +292,7 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
                             size="small"
                           />
                         )}
-                        {step.temperature && step.temperature > 0 && (
+                        {!!step.temperature && step.temperature > 0 && (
                           <Chip
                             label={`${step.temperature}°C`}
                             variant="outlined"
@@ -292,17 +304,6 @@ export default function RecipeCard({ recipe, onSendToESP32 }: RecipeCardProps) {
                   ))}
                 </List>
               )}
-
-              <Button
-                variant="contained"
-                size="large"
-                fullWidth
-                startIcon={<PlayArrowIcon />}
-                onClick={handleExecute}
-                sx={{ mt: 4, borderRadius: 50, py: 2, fontSize: "1.1rem" }}
-              >
-                Start Cooking Process
-              </Button>
             </Box>
           )}
         </DialogContent>
