@@ -15,6 +15,8 @@ import {
   IconButton,
   MenuItem,
   Paper,
+  FormControlLabel,
+  Switch,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
@@ -403,6 +405,21 @@ export default function RecipePage() {
                     <MenuItem value="off">OFF</MenuItem>
                     <MenuItem value="on">ON</MenuItem>
                   </TextField>
+                </Grid>
+                <Grid size={{ xs: 6, sm: 3 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={step.motor}
+                        onChange={(e) =>
+                          handleStepChange(index, "motor", e.target.checked)
+                        }
+                        color="primary"
+                      />
+                    }
+                    label="Motor"
+                    sx={{ mt: 0.5 }}
+                  />
                 </Grid>
               </Grid>
             </Paper>
