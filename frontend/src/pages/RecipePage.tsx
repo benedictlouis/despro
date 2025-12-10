@@ -15,8 +15,7 @@ import {
   IconButton,
   MenuItem,
   Paper,
-  FormControlLabel,
-  Switch,
+  DialogContentText,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
@@ -67,19 +66,6 @@ export default function RecipePage() {
   const [recipeToDelete, setRecipeToDelete] = useState<string | null>(null);
 
   const parameterTypes = ["time", "temperature", "weight", "stove", "mix"];
-
-  const getParameterUnit = (type: string) => {
-    switch (type) {
-      case "time":
-        return "s";
-      case "temperature":
-        return "°C";
-      case "weight":
-        return "g";
-      default:
-        return "";
-    }
-  };
 
   const getParameterPlaceholder = (type: string) => {
     switch (type) {
