@@ -80,14 +80,13 @@ export default function LandingPage() {
             <Typography
               variant="h1"
               sx={{
-                fontWeight: "bold",
-                color: "primary.main",
+                fontWeight: 800,
                 mb: 3,
-                fontSize: { xs: "3rem", md: "5rem" },
+                fontSize: { xs: "4rem", md: "6rem" },
                 letterSpacing: "-0.02em",
               }}
             >
-              Sajipati
+              Sajipati.
             </Typography>
             <Typography
               variant="h5"
