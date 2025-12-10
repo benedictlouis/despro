@@ -109,7 +109,7 @@ export default function RecipePage() {
       const formattedSteps = steps.map((step) => {
         const baseStep: any = { action: step.action };
 
-        if (step.parameter_type && step.parameter_value !== undefined) {
+        if (step.parameter_type && step.parameter_value !== undefined && step.parameter_value !== "") {
           switch (step.parameter_type) {
             case "time":
               baseStep.time = Number(step.parameter_value);
@@ -224,7 +224,7 @@ export default function RecipePage() {
           converted.parameter_type = "mix";
           converted.parameter_value = step.motor ? "on" : "off";
           converted.mix_duration = step.time || "";
-        } else if (step.stove_on !== undefined && step.stove_on !== "off") {
+        } else if (step.stove_on !== undefined && (step.stove_on === "on" || step.stove_on === "off")) {
           converted.parameter_type = "stove";
           converted.parameter_value = step.stove_on;
         } else if (step.weight !== undefined && step.weight > 0) {
@@ -507,7 +507,7 @@ export default function RecipePage() {
                         ...newSteps[index],
                         parameter_type: newType,
                         parameter_value:
-                          newType === "mix" ? "on" : newType === "stove" ? "" : "",
+                          newType === "mix" ? "on" : newType === "stove" ? "off" : "",
                         mix_duration: "",
                       };
                       setSteps(newSteps);
