@@ -142,16 +142,18 @@ export default function DeviceCard({ device, onClick }: DeviceCardProps) {
               {getLastSeen(device.last_seen)}
             </Typography>
           </Box>
-          {device.status === "active" && device.current_step && (
-            <Box display="flex" justifyContent="space-between">
-              <Typography variant="body2" color="text.secondary">
-                Current step:
-              </Typography>
-              <Typography variant="body2" fontWeight={600}>
-                {device.current_step}
-              </Typography>
-            </Box>
-          )}
+          {device.status === "active" &&
+            device.current_step !== null &&
+            device.current_step > 0 && (
+              <Box display="flex" justifyContent="space-between">
+                <Typography variant="body2" color="text.secondary">
+                  Current step:
+                </Typography>
+                <Typography variant="body2" fontWeight={600}>
+                  {device.current_step}
+                </Typography>
+              </Box>
+            )}
         </Stack>
       </CardContent>
     </Card>

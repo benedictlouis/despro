@@ -66,24 +66,21 @@ export default function RecipePage() {
   const [recipeToDelete, setRecipeToDelete] = useState<string | null>(null);
 
   const parameterTypes = ["time", "temperature", "weight", "stove", "mix"];
-  
-  const getParameterUnit = (type: string) => {
-    switch (type) {
-      case "time": return "s";
-      case "temperature": return "°C";
-      case "weight": return "g";
-      default: return "";
-    }
-  };
 
   const getParameterPlaceholder = (type: string) => {
     switch (type) {
-      case "time": return "Enter time in seconds";
-      case "temperature": return "Enter temperature in °C";
-      case "weight": return "Enter weight in grams";
-      case "stove": return "on/off";
-      case "mix": return "on/off";
-      default: return "";
+      case "time":
+        return "Enter time in seconds";
+      case "temperature":
+        return "Enter temperature in °C";
+      case "weight":
+        return "Enter weight in grams";
+      case "stove":
+        return "on/off";
+      case "mix":
+        return "on/off";
+      default:
+        return "";
     }
   };
 
@@ -107,9 +104,9 @@ export default function RecipePage() {
   const handleSubmit = async () => {
     try {
       // Convert parameter_type and parameter_value back to original format
-      const formattedSteps = steps.map(step => {
+      const formattedSteps = steps.map((step) => {
         const baseStep: any = { action: step.action };
-        
+
         if (step.parameter_type && step.parameter_value !== undefined) {
           switch (step.parameter_type) {
             case "time":
@@ -129,7 +126,7 @@ export default function RecipePage() {
               break;
           }
         }
-        
+
         return baseStep;
       });
 
@@ -210,11 +207,11 @@ export default function RecipePage() {
       const recipeSteps = Array.isArray(fullRecipe.steps)
         ? fullRecipe.steps
         : [];
-      
+
       // Convert backend format to UI format
-      const convertedSteps = recipeSteps.map(step => {
+      const convertedSteps = recipeSteps.map((step) => {
         const converted: RecipeStep = { action: step.action || "" };
-        
+
         if (step.time !== undefined && step.time > 0) {
           converted.parameter_type = "time";
           converted.parameter_value = step.time;
@@ -234,10 +231,10 @@ export default function RecipePage() {
           converted.parameter_type = "";
           converted.parameter_value = 0;
         }
-        
+
         return converted;
       });
-      
+
       setSteps(
         convertedSteps.length > 0
           ? convertedSteps
@@ -497,7 +494,8 @@ export default function RecipePage() {
                       newSteps[index] = {
                         ...newSteps[index],
                         parameter_type: newType,
-                        parameter_value: newType === "stove" || newType === "mix" ? "" : ""
+                        parameter_value:
+                          newType === "stove" || newType === "mix" ? "" : "",
                       };
                       setSteps(newSteps);
                     }}
@@ -511,7 +509,8 @@ export default function RecipePage() {
                   </TextField>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  {step.parameter_type === "stove" || step.parameter_type === "mix" ? (
+                  {step.parameter_type === "stove" ||
+                  step.parameter_type === "mix" ? (
                     <TextField
                       select
                       label="Value"
@@ -519,7 +518,13 @@ export default function RecipePage() {
                       size="small"
                       disabled={!step.parameter_type}
                       value={step.parameter_value ?? ""}
-                      onChange={(e) => handleStepChange(index, "parameter_value", e.target.value)}
+                      onChange={(e) =>
+                        handleStepChange(
+                          index,
+                          "parameter_value",
+                          e.target.value
+                        )
+                      }
                     >
                       <MenuItem value="off">OFF</MenuItem>
                       <MenuItem value="on">ON</MenuItem>
@@ -531,10 +536,18 @@ export default function RecipePage() {
                       size="small"
                       disabled={!step.parameter_type}
                       value={step.parameter_value ?? ""}
-                      placeholder={step.parameter_type ? getParameterPlaceholder(step.parameter_type) : "Select parameter type first"}
+                      placeholder={
+                        step.parameter_type
+                          ? getParameterPlaceholder(step.parameter_type)
+                          : "Select parameter type first"
+                      }
                       onChange={(e) => {
                         let value: string | number = e.target.value;
-                        if (step.parameter_type === "time" || step.parameter_type === "temperature" || step.parameter_type === "weight") {
+                        if (
+                          step.parameter_type === "time" ||
+                          step.parameter_type === "temperature" ||
+                          step.parameter_type === "weight"
+                        ) {
                           value = e.target.value;
                         }
                         handleStepChange(index, "parameter_value", value);
