@@ -32,8 +32,8 @@ interface RecipeStep {
   ingredient?: string;
   temperature?: number;
   weight?: number;
-  motor?: boolean | string;
-  stove_on?: boolean | string;
+  motor?: boolean;
+  stove_on?: boolean;
 }
 
 interface Recipe {

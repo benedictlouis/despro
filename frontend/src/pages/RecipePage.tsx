@@ -35,8 +35,8 @@ interface RecipeStep {
   ingredient?: string;
   temperature?: number;
   weight?: number;
-  motor?: boolean | string;
-  stove_on?: boolean | string;
+  motor?: boolean;
+  stove_on?: boolean;
 }
 
 interface Recipe {
@@ -105,6 +105,8 @@ export default function RecipePage() {
 
   const handleSubmit = async () => {
     try {
+      console.log('📝 Current steps state:', steps);
+      
       // Convert parameter_type and parameter_value back to original format
       const formattedSteps = steps.map((step) => {
         const baseStep: any = { action: step.action };
@@ -121,10 +123,10 @@ export default function RecipePage() {
               baseStep.weight = Number(step.parameter_value);
               break;
             case "stove":
-              baseStep.stove_on = step.parameter_value === true || step.parameter_value === "on";
+              baseStep.stove_on = step.parameter_value === true;
               break;
             case "mix":
-              baseStep.motor = step.parameter_value === true || step.parameter_value === "on";
+              baseStep.motor = step.parameter_value === true;
               if (step.mix_duration) {
                 baseStep.time = Number(step.mix_duration);
               }
@@ -134,6 +136,8 @@ export default function RecipePage() {
 
         return baseStep;
       });
+
+      console.log('🚀 Formatted steps to send:', formattedSteps);
 
       if (editingRecipe) {
         await apiClient.put(`/recipes/${editingRecipe.id}`, {
@@ -195,6 +199,7 @@ export default function RecipePage() {
     const newSteps = [...steps];
     // @ts-ignore
     newSteps[index] = { ...newSteps[index], [field]: value };
+    console.log(`✏️ Step ${index} changed - ${field}:`, value, '| Full step:', newSteps[index]);
     setSteps(newSteps);
   };
 
@@ -215,19 +220,21 @@ export default function RecipePage() {
         ? fullRecipe.steps
         : [];
 
+      console.log('📥 Recipe steps from backend:', recipeSteps);
+
       // Convert backend format to UI format
       const convertedSteps = recipeSteps.map((step) => {
         const converted: RecipeStep = { action: step.action || "" };
 
         // Priority-based detection: check which field has meaningful value
         // Motor takes priority (even if motor=true with time=0)
-        if (step.motor === true || step.motor === "on") {
+        if (step.motor === true) {
           converted.parameter_type = "mix";
           converted.parameter_value = true;
           converted.mix_duration = step.time || "";
         } 
         // Stove takes priority (explicit on/off)
-        else if (step.stove_on === true || step.stove_on === "on") {
+        else if (step.stove_on === true) {
           converted.parameter_type = "stove";
           converted.parameter_value = true;
         }
@@ -245,7 +252,7 @@ export default function RecipePage() {
           converted.parameter_value = step.time;
         }
         // Last resort: stove off (if explicitly set and nothing else)
-        else if ((step.stove_on === false || step.stove_on === "off") && step.temperature === 0 && step.weight === 0 && step.time === 0 && !step.motor) {
+        else if (step.stove_on === false && step.temperature === 0 && step.weight === 0 && step.time === 0 && !step.motor) {
           converted.parameter_type = "stove";
           converted.parameter_value = false;
         }
@@ -258,6 +265,8 @@ export default function RecipePage() {
 
         return converted;
       });
+
+      console.log('🔄 Converted steps for UI:', convertedSteps);
 
       setSteps(
         convertedSteps.length > 0
