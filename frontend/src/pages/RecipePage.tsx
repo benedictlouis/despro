@@ -35,8 +35,8 @@ interface RecipeStep {
   ingredient?: string;
   temperature?: number;
   weight?: number;
-  motor?: boolean;
-  stove_on?: boolean;
+  motor?: boolean | string;
+  stove_on?: boolean | string;
 }
 
 interface Recipe {
@@ -121,10 +121,10 @@ export default function RecipePage() {
               baseStep.weight = Number(step.parameter_value);
               break;
             case "stove":
-              baseStep.stove_on = step.parameter_value === "on" || step.parameter_value === true;
+              baseStep.stove_on = step.parameter_value === true || step.parameter_value === "on";
               break;
             case "mix":
-              baseStep.motor = step.parameter_value === "on" || step.parameter_value === true;
+              baseStep.motor = step.parameter_value === true || step.parameter_value === "on";
               if (step.mix_duration) {
                 baseStep.time = Number(step.mix_duration);
               }
@@ -221,13 +221,13 @@ export default function RecipePage() {
 
         // Priority-based detection: check which field has meaningful value
         // Motor takes priority (even if motor=true with time=0)
-        if (step.motor === true) {
+        if (step.motor === true || step.motor === "on") {
           converted.parameter_type = "mix";
-          converted.parameter_value = "on";
+          converted.parameter_value = true;
           converted.mix_duration = step.time || "";
         } 
         // Stove takes priority (explicit on/off)
-        else if (step.stove_on === true) {
+        else if (step.stove_on === true || step.stove_on === "on") {
           converted.parameter_type = "stove";
           converted.parameter_value = true;
         }
@@ -245,7 +245,7 @@ export default function RecipePage() {
           converted.parameter_value = step.time;
         }
         // Last resort: stove off (if explicitly set and nothing else)
-        else if (step.stove_on === false && step.temperature === 0 && step.weight === 0 && step.time === 0 && !step.motor) {
+        else if ((step.stove_on === false || step.stove_on === "off") && step.temperature === 0 && step.weight === 0 && step.time === 0 && !step.motor) {
           converted.parameter_type = "stove";
           converted.parameter_value = false;
         }

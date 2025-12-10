@@ -1,5 +1,3 @@
-const VALID_STOVE_STATES = ["on", "off"];
-
 const validateRecipeStep = (step, index) => {
   if (!step.action || typeof step.action !== "string") {
     return {
@@ -8,13 +6,10 @@ const validateRecipeStep = (step, index) => {
     };
   }
 
-  if (
-    step.stove_on !== undefined &&
-    !VALID_STOVE_STATES.includes(step.stove_on)
-  ) {
+  if (step.stove_on !== undefined && typeof step.stove_on !== "boolean") {
     return {
       isValid: false,
-      error: `stove_on must be either 'on' or 'off' (problem at step index ${index})`,
+      error: `stove_on must be a boolean (problem at step index ${index})`,
     };
   }
 
@@ -74,7 +69,7 @@ const normalizeRecipeStep = (step, index) => ({
   weight: step.weight ?? 0,
   time: step.time ?? 0,
   motor: step.motor ?? false,
-  stove_on: step.stove_on ?? "off",
+  stove_on: step.stove_on ?? false,
 });
 
 const normalizeRecipeSteps = (steps) => {
