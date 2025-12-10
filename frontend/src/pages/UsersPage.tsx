@@ -164,31 +164,35 @@ export default function UsersPage() {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: { xs: 2, sm: 3 } }}>
       <Box
         sx={{
           display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: { xs: "stretch", sm: "center" },
+          gap: 2,
           mb: 3,
         }}
       >
         <Typography
-          variant="h4"
+          variant="h1"
           sx={{
-            fontWeight: "bold",
-            color: "primary.main",
+            fontWeight: 800,
+            fontSize: { xs: "3rem", md: "4.5rem" },
           }}
         >
-          User Management
+          User Management.
         </Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={handleCreateClick}
+          fullWidth
           sx={{
             px: 3,
             py: 1,
+            maxWidth: { sm: "200px" },
             boxShadow: "0 4px 14px rgba(141, 64, 37, 0.3)",
             "&:hover": {
               boxShadow: "0 6px 20px rgba(141, 64, 37, 0.4)",
@@ -209,14 +213,14 @@ export default function UsersPage() {
         }}
       >
         <TableContainer>
-          <Table>
+          <Table sx={{ minWidth: { xs: 300, sm: 650 } }}>
             <TableHead>
               <TableRow sx={{ bgcolor: "rgba(141, 64, 37, 0.05)" }}>
-                <TableCell sx={{ fontWeight: "bold" }}>ID</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>Username</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>Role</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>Created At</TableCell>
-                <TableCell sx={{ fontWeight: "bold", width: 100 }}>
+                <TableCell sx={{ fontWeight: "bold", display: "none", fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>ID</TableCell>
+                <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Username</TableCell>
+                <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Role</TableCell>
+                <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Created At</TableCell>
+                <TableCell sx={{ fontWeight: "bold", width: { xs: 60, sm: 100 }, fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                   Actions
                 </TableCell>
               </TableRow>
@@ -232,11 +236,15 @@ export default function UsersPage() {
                   }}
                 >
                   <TableCell
-                    sx={{ fontFamily: "monospace", fontSize: "0.85rem" }}
+                    sx={{ 
+                      fontFamily: "monospace", 
+                      fontSize: { xs: "0.7rem", sm: "0.85rem" },
+                      display: "none"
+                    }}
                   >
                     {user.id}
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>
+                  <TableCell sx={{ fontWeight: 500, fontSize: { xs: "0.8rem", sm: "0.875rem" } }}>
                     {user.username}
                   </TableCell>
                   <TableCell>
@@ -247,11 +255,11 @@ export default function UsersPage() {
                       sx={{
                         fontWeight: 600,
                         textTransform: "uppercase",
-                        fontSize: "0.7rem",
+                        fontSize: { xs: "0.65rem", sm: "0.7rem" },
                       }}
                     />
                   </TableCell>
-                  <TableCell sx={{ color: "text.secondary" }}>
+                  <TableCell sx={{ color: "text.secondary", fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                     {formatDate(user.created_at)}
                   </TableCell>
                   <TableCell>
@@ -284,12 +292,12 @@ export default function UsersPage() {
         {users.length === 0 && (
           <Box
             sx={{
-              p: 6,
+              p: { xs: 4, sm: 6 },
               textAlign: "center",
               color: "text.secondary",
             }}
           >
-            <Typography>No users found</Typography>
+            <Typography sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}>No users found</Typography>
           </Box>
         )}
       </Paper>
@@ -300,6 +308,7 @@ export default function UsersPage() {
           mt: 2,
           color: "text.secondary",
           textAlign: "right",
+          fontSize: { xs: "0.75rem", sm: "0.875rem" },
         }}
       >
         Total Users: {users.length}

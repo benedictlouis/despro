@@ -29,6 +29,8 @@ import { useToast } from "../contexts/ToastContext";
 interface RecipeStep {
   step?: number;
   action: string;
+  parameter_type?: string;
+  parameter_value?: number | string | boolean;
   time?: number;
   ingredient?: string;
   temperature?: number;
@@ -55,13 +57,46 @@ export default function RecipePage() {
   const [steps, setSteps] = useState<RecipeStep[]>([
     {
       action: "",
-      temperature: 0,
-      weight: 0,
-      time: 0,
-      motor: false,
-      stove_on: "off",
+      parameter_type: "",
+      parameter_value: 0,
     },
   ]);
+
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [recipeToDelete, setRecipeToDelete] = useState<string | null>(null);
+
+  const parameterTypes = ["time", "temperature", "weight", "stove", "mix"];
+
+  const getParameterUnit = (type: string) => {
+    switch (type) {
+      case "time":
+        return "s";
+      case "temperature":
+        return "°C";
+      case "weight":
+        return "g";
+      default:
+        return "";
+    }
+  };
+
+  const getParameterPlaceholder = (type: string) => {
+    switch (type) {
+      case "time":
+        return "Enter time in seconds";
+      case "temperature":
+        return "Enter temperature in °C";
+      case "weight":
+        return "Enter weight in grams";
+      case "stove":
+        return "on/off";
+      case "mix":
+        return "on/off";
+      default:
+        return "";
+    }
+  };
 
   // --- ORIGINAL LOGIC RESTORED ---
   useEffect(() => {
@@ -82,16 +117,43 @@ export default function RecipePage() {
 
   const handleSubmit = async () => {
     try {
+      // Convert parameter_type and parameter_value back to original format
+      const formattedSteps = steps.map((step) => {
+        const baseStep: any = { action: step.action };
+
+        if (step.parameter_type && step.parameter_value !== undefined) {
+          switch (step.parameter_type) {
+            case "time":
+              baseStep.time = Number(step.parameter_value);
+              break;
+            case "temperature":
+              baseStep.temperature = Number(step.parameter_value);
+              break;
+            case "weight":
+              baseStep.weight = Number(step.parameter_value);
+              break;
+            case "stove":
+              baseStep.stove_on = step.parameter_value;
+              break;
+            case "mix":
+              baseStep.motor = step.parameter_value === "on";
+              break;
+          }
+        }
+
+        return baseStep;
+      });
+
       if (editingRecipe) {
         await apiClient.put(`/recipes/${editingRecipe.id}`, {
           recipe: recipeName,
-          steps: steps,
+          steps: formattedSteps,
         });
         showToast("Recipe updated successfully", "success");
       } else {
         await apiClient.post("/recipes", {
           recipe: recipeName,
-          steps: steps,
+          steps: formattedSteps,
         });
         showToast("Recipe created successfully", "success");
       }
@@ -101,11 +163,8 @@ export default function RecipePage() {
       setSteps([
         {
           action: "",
-          temperature: 0,
-          weight: 0,
-          time: 0,
-          motor: false,
-          stove_on: "off",
+          parameter_type: "",
+          parameter_value: 0,
         },
       ]);
       setEditingRecipe(null);
@@ -123,11 +182,8 @@ export default function RecipePage() {
       ...steps,
       {
         action: "",
-        temperature: 0,
-        weight: 0,
-        time: 0,
-        motor: false,
-        stove_on: "off",
+        parameter_type: "",
+        parameter_value: 0,
       },
     ]);
   };
@@ -165,17 +221,42 @@ export default function RecipePage() {
       const recipeSteps = Array.isArray(fullRecipe.steps)
         ? fullRecipe.steps
         : [];
+
+      // Convert backend format to UI format
+      const convertedSteps = recipeSteps.map((step) => {
+        const converted: RecipeStep = { action: step.action || "" };
+
+        if (step.time !== undefined && step.time > 0) {
+          converted.parameter_type = "time";
+          converted.parameter_value = step.time;
+        } else if (step.temperature !== undefined && step.temperature > 0) {
+          converted.parameter_type = "temperature";
+          converted.parameter_value = step.temperature;
+        } else if (step.weight !== undefined && step.weight > 0) {
+          converted.parameter_type = "weight";
+          converted.parameter_value = step.weight;
+        } else if (step.stove_on !== undefined) {
+          converted.parameter_type = "stove";
+          converted.parameter_value = step.stove_on;
+        } else if (step.motor !== undefined) {
+          converted.parameter_type = "mix";
+          converted.parameter_value = step.motor ? "on" : "off";
+        } else {
+          converted.parameter_type = "";
+          converted.parameter_value = 0;
+        }
+
+        return converted;
+      });
+
       setSteps(
-        recipeSteps.length > 0
-          ? recipeSteps
+        convertedSteps.length > 0
+          ? convertedSteps
           : [
               {
                 action: "",
-                temperature: 0,
-                weight: 0,
-                time: 0,
-                motor: false,
-                stove_on: "off",
+                parameter_type: "",
+                parameter_value: 0,
               },
             ]
       );
@@ -212,11 +293,8 @@ export default function RecipePage() {
     setSteps([
       {
         action: "",
-        temperature: 0,
-        weight: 0,
-        time: 0,
-        motor: false,
-        stove_on: "off",
+        parameter_type: "",
+        parameter_value: 0,
       },
     ]);
     setEditingRecipe(null);
@@ -405,7 +483,7 @@ export default function RecipePage() {
               </Box>
 
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     label="Action"
                     fullWidth
@@ -414,77 +492,82 @@ export default function RecipePage() {
                     onChange={(e) =>
                       handleStepChange(index, "action", e.target.value)
                     }
+                    placeholder="e.g., Add water, Mix ingredients, Turn on stove..."
                   />
                 </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
-                  <TextField
-                    type="number"
-                    label="Time (s)"
-                    fullWidth
-                    size="small"
-                    value={step.time}
-                    onChange={(e) =>
-                      handleStepChange(index, "time", Number(e.target.value))
-                    }
-                  />
-                </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
-                  <TextField
-                    type="number"
-                    label="Temp (°C)"
-                    fullWidth
-                    size="small"
-                    value={step.temperature}
-                    onChange={(e) =>
-                      handleStepChange(
-                        index,
-                        "temperature",
-                        Number(e.target.value)
-                      )
-                    }
-                  />
-                </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
-                  <TextField
-                    type="number"
-                    label="Weight (g)"
-                    fullWidth
-                    size="small"
-                    value={step.weight}
-                    onChange={(e) =>
-                      handleStepChange(index, "weight", Number(e.target.value))
-                    }
-                  />
-                </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     select
-                    label="Stove"
+                    label="Parameter Type"
                     fullWidth
                     size="small"
-                    value={step.stove_on}
-                    onChange={(e) =>
-                      handleStepChange(index, "stove_on", e.target.value)
-                    }
+                    value={step.parameter_type || ""}
+                    onChange={(e) => {
+                      const newType = e.target.value;
+                      const newSteps = [...steps];
+                      newSteps[index] = {
+                        ...newSteps[index],
+                        parameter_type: newType,
+                        parameter_value:
+                          newType === "stove" || newType === "mix" ? "" : "",
+                      };
+                      setSteps(newSteps);
+                    }}
                   >
-                    <MenuItem value="off">OFF</MenuItem>
-                    <MenuItem value="on">ON</MenuItem>
+                    <MenuItem value="">None</MenuItem>
+                    {parameterTypes.map((type) => (
+                      <MenuItem key={type} value={type}>
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </MenuItem>
+                    ))}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={step.motor}
-                        onChange={(e) =>
-                          handleStepChange(index, "motor", e.target.checked)
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  {step.parameter_type === "stove" ||
+                  step.parameter_type === "mix" ? (
+                    <TextField
+                      select
+                      label="Value"
+                      fullWidth
+                      size="small"
+                      disabled={!step.parameter_type}
+                      value={step.parameter_value ?? ""}
+                      onChange={(e) =>
+                        handleStepChange(
+                          index,
+                          "parameter_value",
+                          e.target.value
+                        )
+                      }
+                    >
+                      <MenuItem value="off">OFF</MenuItem>
+                      <MenuItem value="on">ON</MenuItem>
+                    </TextField>
+                  ) : (
+                    <TextField
+                      label="Value"
+                      fullWidth
+                      size="small"
+                      disabled={!step.parameter_type}
+                      value={step.parameter_value ?? ""}
+                      placeholder={
+                        step.parameter_type
+                          ? getParameterPlaceholder(step.parameter_type)
+                          : "Select parameter type first"
+                      }
+                      onChange={(e) => {
+                        let value: string | number = e.target.value;
+                        if (
+                          step.parameter_type === "time" ||
+                          step.parameter_type === "temperature" ||
+                          step.parameter_type === "weight"
+                        ) {
+                          value = e.target.value;
                         }
-                        color="primary"
-                      />
-                    }
-                    label="Motor"
-                    sx={{ mt: 0.5 }}
-                  />
+                        handleStepChange(index, "parameter_value", value);
+                      }}
+                    />
+                  )}
                 </Grid>
               </Grid>
             </Paper>

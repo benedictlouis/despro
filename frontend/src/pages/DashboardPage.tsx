@@ -150,15 +150,16 @@ export default function DashboardPage() {
   }
 
   return (
-    <Container maxWidth="xl" style={{ overflowY: "auto" }}>
-      <Box
-        mb={4}
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-      >
-        <Typography variant="h4" component="h1">
-          Kitchen Dashboard
+    <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
+      <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+        <Typography
+          variant="h1"
+          sx={{
+            fontWeight: 800,
+            fontSize: { xs: "3rem", md: "4.5rem" },
+          }}
+        >
+          Kitchen Dashboard.
         </Typography>
         <Button
           variant="contained"
@@ -183,214 +184,222 @@ export default function DashboardPage() {
         </Button>
       </Box>
 
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
-        <Box sx={{ flex: "1 1 250px", minWidth: "250px" }}>
-          <StatCard
-            title="Total Recipes"
-            value={stats.totalRecipes}
-            subtitle="Active recipes in system"
-            color="#1976d2"
-          />
-        </Box>
-        <Box sx={{ flex: "1 1 250px", minWidth: "250px" }}>
-          <StatCard
-            title="Active Devices"
-            value={stats.activeDevices}
-            subtitle="ESP32 devices connected"
-            color="#2e7d32"
-          />
-        </Box>
-        <Box sx={{ flex: "1 1 250px", minWidth: "250px" }}>
-          <StatCard
-            title="Today's Cookings"
-            value={stats.todaysCookings}
-            subtitle="Recipes executed today"
-            color="#ed6c02"
-          />
-        </Box>
-        <Box sx={{ flex: "1 1 250px", minWidth: "250px" }}>
-          <StatCard
-            title="Total Completions"
-            value={stats.totalCompletions}
-            subtitle="All-time recipe completions"
-            color="#9c27b0"
-          />
-        </Box>
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, 1fr)" }, gap: 2, mb: 3 }}>
+        <StatCard
+          title="Total Recipes"
+          value={stats.totalRecipes}
+          subtitle="Active recipes in system"
+          color="#1976d2"
+        />
+        <StatCard
+          title="Active Devices"
+          value={stats.activeDevices}
+          subtitle="ESP32 devices connected"
+          color="#2e7d32"
+        />
+        <StatCard
+          title="Today's Cookings"
+          value={stats.todaysCookings}
+          subtitle="Recipes executed today"
+          color="#ed6c02"
+        />
+        <StatCard
+          title="Total Completions"
+          value={stats.totalCompletions}
+          subtitle="All-time recipe completions"
+          color="#9c27b0"
+        />
       </Box>
 
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
-        <Box sx={{ flex: "1 1 400px", minWidth: "400px" }}>
-          <Card
-            elevation={0}
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "repeat(2, 1fr)" }, gap: 3, mb: 3 }}>
+        <Card
+          elevation={0}
+          sx={{
+            border: "1px solid",
+            borderColor: "primary.main",
+            borderRadius: 2,
+          }}
+        >
+          <CardHeader
+            title="Most Used Recipes"
+            subheader="Recipe execution frequency this month"
             sx={{
-              border: "1px solid",
-              borderColor: "primary.main",
-              borderRadius: 2,
+              "& .MuiCardHeader-title": { fontSize: { xs: "1.1rem", sm: "1.25rem" } },
+              "& .MuiCardHeader-subheader": { fontSize: { xs: "0.75rem", sm: "0.875rem" } }
             }}
-          >
-            <CardHeader
-              title="Most Used Recipes"
-              subheader="Recipe execution frequency this month"
-            />
-            <CardContent>
-              {recipeUsageData.length === 0 ? (
-                <Box
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  height={300}
-                >
-                  <Typography color="textSecondary">
-                    No recipe usage data available
-                  </Typography>
-                </Box>
-              ) : (
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={recipeUsageData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="name"
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                      fontSize={12}
-                    />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#8884d8" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
-        </Box>
+          />
+          <CardContent>
+            {recipeUsageData.length === 0 ? (
+              <Box
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                height={250}
+              >
+                <Typography color="textSecondary" sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}>
+                  No recipe usage data available
+                </Typography>
+              </Box>
+            ) : (
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={recipeUsageData} margin={{ bottom: 60, left: -20, right: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="name"
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                    fontSize={9}
+                    interval={0}
+                    tickFormatter={(value) => value.length > 15 ? value.substring(0, 15) + '...' : value}
+                  />
+                  <YAxis fontSize={9} width={40} />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#8884d8" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
 
-        <Box sx={{ flex: "1 1 400px", minWidth: "400px" }}>
-          <Card
-            elevation={0}
+        <Card
+          elevation={0}
+          sx={{
+            border: "1px solid",
+            borderColor: "primary.main",
+            borderRadius: 2,
+          }}
+        >
+          <CardHeader
+            title="Device Status"
+            subheader="Current device distribution"
             sx={{
-              border: "1px solid",
-              borderColor: "primary.main",
-              borderRadius: 2,
+              "& .MuiCardHeader-title": { fontSize: { xs: "1.1rem", sm: "1.25rem" } },
+              "& .MuiCardHeader-subheader": { fontSize: { xs: "0.75rem", sm: "0.875rem" } }
             }}
-          >
-            <CardHeader
-              title="Device Status"
-              subheader="Current device distribution"
-            />
-            <CardContent>
-              {cookingStatusData.length === 0 ? (
+          />
+          <CardContent>
+            {cookingStatusData.length === 0 ? (
+              <Box
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                height={250}
+              >
+                <Typography color="textSecondary" sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}>
+                  No cooking status data available
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={cookingStatusData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }: any) =>
+                        `${name} ${(percent * 100).toFixed(0)}%`
+                      }
+                      outerRadius={70}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {cookingStatusData.map((_entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
                 <Box
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  height={300}
+                  sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 1,
+                    mt: 2,
+                    justifyContent: "center",
+                  }}
                 >
-                  <Typography color="textSecondary">
-                    No cooking status data available
-                  </Typography>
+                  {cookingStatusData.map((entry, index) => (
+                    <Chip
+                      key={entry.name}
+                      label={`${entry.name}: ${entry.value}`}
+                      size="small"
+                      sx={{
+                        backgroundColor: COLORS[index % COLORS.length],
+                        color: "white",
+                        fontSize: { xs: "0.7rem", sm: "0.8125rem" }
+                      }}
+                    />
+                  ))}
                 </Box>
-              ) : (
-                <>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={cookingStatusData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }: any) =>
-                          `${name} ${(percent * 100).toFixed(0)}%`
-                        }
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {cookingStatusData.map((_entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={COLORS[index % COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: 1,
-                      mt: 2,
-                      justifyContent: "center",
-                    }}
-                  >
-                    {cookingStatusData.map((entry, index) => (
-                      <Chip
-                        key={entry.name}
-                        label={`${entry.name}: ${entry.value}`}
-                        size="small"
-                        sx={{
-                          backgroundColor: COLORS[index % COLORS.length],
-                          color: "white",
-                        }}
-                      />
-                    ))}
-                  </Box>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </Box>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </Box>
 
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
-        <Box sx={{ flex: "1 1 500px", minWidth: "500px" }}>
-          <Card
-            elevation={0}
+      <Box sx={{ mb: 3 }}>
+        <Card
+          elevation={0}
+          sx={{
+            border: "1px solid",
+            borderColor: "primary.main",
+            borderRadius: 2,
+          }}
+        >
+          <CardHeader
+            title="Weekly Activity"
+            subheader="Daily recipe completions"
             sx={{
-              border: "1px solid",
-              borderColor: "primary.main",
-              borderRadius: 2,
+              "& .MuiCardHeader-title": { fontSize: { xs: "1.1rem", sm: "1.25rem" } },
+              "& .MuiCardHeader-subheader": { fontSize: { xs: "0.75rem", sm: "0.875rem" } }
             }}
-          >
-            <CardHeader
-              title="Weekly Activity"
-              subheader="Daily recipe completions"
-            />
-            <CardContent>
-              {dailyActivityData.length === 0 ? (
-                <Box
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  height={300}
-                >
-                  <Typography color="textSecondary">
-                    No daily activity data available
-                  </Typography>
-                </Box>
-              ) : (
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={dailyActivityData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="day" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line
-                      type="monotone"
-                      dataKey="recipes"
-                      stroke="#8884d8"
-                      strokeWidth={3}
-                      dot={{ fill: "#8884d8", strokeWidth: 2, r: 5 }}
-                      name="Recipes Completed"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
-        </Box>
+          />
+          <CardContent>
+            {dailyActivityData.length === 0 ? (
+              <Box
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                height={250}
+              >
+                <Typography color="textSecondary" sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}>
+                  No daily activity data available
+                </Typography>
+              </Box>
+            ) : (
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={dailyActivityData} margin={{ left: -20, right: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="day" 
+                    fontSize={9}
+                    interval={0}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  <YAxis fontSize={9} width={40} />
+                  <Tooltip />
+                  <Line
+                    type="monotone"
+                    dataKey="recipes"
+                    stroke="#8884d8"
+                    strokeWidth={2}
+                    dot={{ fill: "#8884d8", strokeWidth: 2, r: 4 }}
+                    name="Recipes Completed"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
       </Box>
     </Container>
   );
