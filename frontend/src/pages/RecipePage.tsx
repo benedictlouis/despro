@@ -219,23 +219,23 @@ export default function RecipePage() {
       const convertedSteps = recipeSteps.map((step) => {
         const converted: RecipeStep = { action: step.action || "" };
 
-        // Check motor first before time to avoid confusion
-        if (step.motor !== undefined) {
+        // Check motor first (even if false) to detect mix parameter
+        if (step.motor !== undefined && step.motor !== false) {
           converted.parameter_type = "mix";
           converted.parameter_value = step.motor ? "on" : "off";
           converted.mix_duration = step.time || "";
         } else if (step.stove_on !== undefined && step.stove_on !== "off") {
           converted.parameter_type = "stove";
           converted.parameter_value = step.stove_on;
-        } else if (step.time !== undefined && step.time > 0) {
-          converted.parameter_type = "time";
-          converted.parameter_value = step.time;
-        } else if (step.temperature !== undefined && step.temperature > 0) {
-          converted.parameter_type = "temperature";
-          converted.parameter_value = step.temperature;
         } else if (step.weight !== undefined && step.weight > 0) {
           converted.parameter_type = "weight";
           converted.parameter_value = step.weight;
+        } else if (step.temperature !== undefined && step.temperature > 0) {
+          converted.parameter_type = "temperature";
+          converted.parameter_value = step.temperature;
+        } else if (step.time !== undefined && step.time > 0) {
+          converted.parameter_type = "time";
+          converted.parameter_value = step.time;
         } else {
           converted.parameter_type = "";
           converted.parameter_value = 0;
