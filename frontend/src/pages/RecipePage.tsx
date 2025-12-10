@@ -219,24 +219,38 @@ export default function RecipePage() {
       const convertedSteps = recipeSteps.map((step) => {
         const converted: RecipeStep = { action: step.action || "" };
 
-        // Check motor first (even if false) to detect mix parameter
-        if (step.motor !== undefined && step.motor !== false) {
+        // Priority-based detection: check which field has meaningful value
+        // Motor takes priority (even if motor=true with time=0)
+        if (step.motor === true) {
           converted.parameter_type = "mix";
-          converted.parameter_value = step.motor ? "on" : "off";
+          converted.parameter_value = "on";
           converted.mix_duration = step.time || "";
-        } else if (step.stove_on !== undefined && (step.stove_on === "on" || step.stove_on === "off")) {
+        } 
+        // Stove takes priority (explicit on/off)
+        else if (step.stove_on === "on") {
           converted.parameter_type = "stove";
-          converted.parameter_value = step.stove_on;
-        } else if (step.weight !== undefined && step.weight > 0) {
+          converted.parameter_value = "on";
+        } 
+        // Check for non-zero values in order of priority
+        else if (step.weight !== undefined && step.weight > 0) {
           converted.parameter_type = "weight";
           converted.parameter_value = step.weight;
-        } else if (step.temperature !== undefined && step.temperature > 0) {
+        } 
+        else if (step.temperature !== undefined && step.temperature > 0) {
           converted.parameter_type = "temperature";
           converted.parameter_value = step.temperature;
-        } else if (step.time !== undefined && step.time > 0) {
+        } 
+        else if (step.time !== undefined && step.time > 0) {
           converted.parameter_type = "time";
           converted.parameter_value = step.time;
-        } else {
+        }
+        // Last resort: stove off (if explicitly set and nothing else)
+        else if (step.stove_on === "off" && step.temperature === 0 && step.weight === 0 && step.time === 0 && !step.motor) {
+          converted.parameter_type = "stove";
+          converted.parameter_value = "off";
+        }
+        // No parameter selected
+        else {
           converted.parameter_type = "";
           converted.parameter_value = 0;
           converted.mix_duration = "";
