@@ -30,6 +30,7 @@ interface RecipeStep {
   action: string;
   parameter_type?: string;
   parameter_value?: number | string | boolean;
+  mix_duration?: number | string;
   time?: number;
   ingredient?: string;
   temperature?: number;
@@ -58,6 +59,7 @@ export default function RecipePage() {
       action: "",
       parameter_type: "",
       parameter_value: 0,
+      mix_duration: "",
     },
   ]);
 
@@ -123,6 +125,9 @@ export default function RecipePage() {
               break;
             case "mix":
               baseStep.motor = step.parameter_value === "on";
+              if (step.mix_duration) {
+                baseStep.time = Number(step.mix_duration);
+              }
               break;
           }
         }
@@ -151,6 +156,7 @@ export default function RecipePage() {
           action: "",
           parameter_type: "",
           parameter_value: 0,
+          mix_duration: "",
         },
       ]);
       setEditingRecipe(null);
@@ -170,6 +176,7 @@ export default function RecipePage() {
         action: "",
         parameter_type: "",
         parameter_value: 0,
+        mix_duration: "",
       },
     ]);
   };
@@ -227,9 +234,11 @@ export default function RecipePage() {
         } else if (step.motor !== undefined) {
           converted.parameter_type = "mix";
           converted.parameter_value = step.motor ? "on" : "off";
+          converted.mix_duration = step.time || "";
         } else {
           converted.parameter_type = "";
           converted.parameter_value = 0;
+          converted.mix_duration = "";
         }
 
         return converted;
@@ -243,6 +252,7 @@ export default function RecipePage() {
                 action: "",
                 parameter_type: "",
                 parameter_value: 0,
+                mix_duration: "",
               },
             ]
       );
@@ -281,6 +291,7 @@ export default function RecipePage() {
         action: "",
         parameter_type: "",
         parameter_value: 0,
+        mix_duration: "",
       },
     ]);
     setEditingRecipe(null);
@@ -496,6 +507,7 @@ export default function RecipePage() {
                         parameter_type: newType,
                         parameter_value:
                           newType === "stove" || newType === "mix" ? "" : "",
+                        mix_duration: "",
                       };
                       setSteps(newSteps);
                     }}
@@ -555,6 +567,20 @@ export default function RecipePage() {
                     />
                   )}
                 </Grid>
+                {step.parameter_type === "mix" && (
+                  <Grid size={{ xs: 12 }}>
+                    <TextField
+                      label="Mix Duration (seconds)"
+                      fullWidth
+                      size="small"
+                      value={step.mix_duration ?? ""}
+                      placeholder="Enter duration in seconds"
+                      onChange={(e) =>
+                        handleStepChange(index, "mix_duration", e.target.value)
+                      }
+                    />
+                  </Grid>
+                )}
               </Grid>
             </Paper>
           ))}
