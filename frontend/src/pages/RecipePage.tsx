@@ -36,13 +36,13 @@ interface RecipeStep {
   temperature?: number;
   weight?: number;
   motor?: boolean;
-  stove_on?: string;
+  stove_on?: boolean;
 }
 
 interface Recipe {
   id: string;
   name: string;
-  steps?: RecipeStep[] | string;
+  steps?: RecipeStep[];
   createdAt?: string;
 }
 
@@ -121,10 +121,10 @@ export default function RecipePage() {
               baseStep.weight = Number(step.parameter_value);
               break;
             case "stove":
-              baseStep.stove_on = step.parameter_value;
+              baseStep.stove_on = step.parameter_value === "on" || step.parameter_value === true;
               break;
             case "mix":
-              baseStep.motor = step.parameter_value === "on";
+              baseStep.motor = step.parameter_value === "on" || step.parameter_value === true;
               if (step.mix_duration) {
                 baseStep.time = Number(step.mix_duration);
               }
@@ -227,10 +227,10 @@ export default function RecipePage() {
           converted.mix_duration = step.time || "";
         } 
         // Stove takes priority (explicit on/off)
-        else if (step.stove_on === "on") {
+        else if (step.stove_on === true) {
           converted.parameter_type = "stove";
-          converted.parameter_value = "on";
-        } 
+          converted.parameter_value = true;
+        }
         // Check for non-zero values in order of priority
         else if (step.weight !== undefined && step.weight > 0) {
           converted.parameter_type = "weight";
@@ -245,9 +245,9 @@ export default function RecipePage() {
           converted.parameter_value = step.time;
         }
         // Last resort: stove off (if explicitly set and nothing else)
-        else if (step.stove_on === "off" && step.temperature === 0 && step.weight === 0 && step.time === 0 && !step.motor) {
+        else if (step.stove_on === false && step.temperature === 0 && step.weight === 0 && step.time === 0 && !step.motor) {
           converted.parameter_type = "stove";
-          converted.parameter_value = "off";
+          converted.parameter_value = false;
         }
         // No parameter selected
         else {
@@ -521,7 +521,7 @@ export default function RecipePage() {
                         ...newSteps[index],
                         parameter_type: newType,
                         parameter_value:
-                          newType === "mix" ? "on" : newType === "stove" ? "off" : "",
+                          newType === "mix" ? true : newType === "stove" ? false : "",
                         mix_duration: "",
                       };
                       setSteps(newSteps);
@@ -544,12 +544,12 @@ export default function RecipePage() {
                       fullWidth
                       size="small"
                       disabled={!step.parameter_type}
-                      value={step.parameter_value ?? ""}
+                      value={step.parameter_value === true ? "on" : "off"}
                       onChange={(e) =>
                         handleStepChange(
                           index,
                           "parameter_value",
-                          e.target.value
+                          e.target.value === "on"
                         )
                       }
                     >

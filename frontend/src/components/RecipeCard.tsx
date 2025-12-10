@@ -33,13 +33,13 @@ interface RecipeStep {
   temperature?: number;
   weight?: number;
   motor?: boolean;
-  stove_on?: string;
+  stove_on?: boolean;
 }
 
 interface Recipe {
   id: string;
   name: string;
-  steps?: RecipeStep[] | string;
+  steps?: RecipeStep[];
   createdAt?: string;
 }
 

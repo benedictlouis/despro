@@ -174,6 +174,8 @@ class MQTTService {
         last_step: isLastStep,
       };
 
+      console.log(message.step);
+
       await mqttClient.publish(config.mqtt.topics.webMenuDetail, message);
 
       console.log(
