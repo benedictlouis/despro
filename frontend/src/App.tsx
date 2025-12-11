@@ -47,21 +47,26 @@ function App() {
                 <Route
                   path="/*"
                   element={
-                    <ProtectedRoute>
-                      <MainLayout>
-                        <Suspense fallback={<LoadingFallback />}>
-                          <Routes>
-                            <Route
-                              path="/dashboard"
-                              element={<DashboardPage />}
-                            />
-                            <Route path="/recipes" element={<RecipePage />} />
-                            <Route path="/devices" element={<DevicesPage />} />
-                            <Route path="/users" element={<UsersPage />} />
-                          </Routes>
-                        </Suspense>
-                      </MainLayout>
-                    </ProtectedRoute>
+                    <MainLayout>
+                      <Suspense fallback={<LoadingFallback />}>
+                        <Routes>
+                          <Route
+                            path="/dashboard"
+                            element={<DashboardPage />}
+                          />
+                          <Route path="/recipes" element={<RecipePage />} />
+                          <Route path="/devices" element={<DevicesPage />} />
+                          <Route
+                            path="/users"
+                            element={
+                              <ProtectedRoute>
+                                <UsersPage />
+                              </ProtectedRoute>
+                            }
+                          />
+                        </Routes>
+                      </Suspense>
+                    </MainLayout>
                   }
                 />
               </Routes>

@@ -24,6 +24,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import RecipeCard from "../components/RecipeCard";
 import apiClient from "../utils/apiClient";
 import { useToast } from "../contexts/ToastContext";
+import { useAuth } from "../contexts/AuthContext";
 
 interface RecipeStep {
   step?: number;
@@ -49,6 +50,7 @@ interface Recipe {
 
 export default function RecipePage() {
   const { showToast } = useToast();
+  const { isAuthenticated } = useAuth();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -109,8 +111,8 @@ export default function RecipePage() {
 
   const handleSubmit = async () => {
     try {
-      console.log('📝 Current steps state:', steps);
-      
+      console.log("📝 Current steps state:", steps);
+
       // Convert parameter_type and parameter_value back to original format
       const formattedSteps = steps.map((step) => {
         const baseStep: any = { 
@@ -118,7 +120,11 @@ export default function RecipePage() {
           stove_on: step.stove_on ?? false // Always include stove_on
         };
 
-        if (step.parameter_type && step.parameter_value !== undefined && step.parameter_value !== "") {
+        if (
+          step.parameter_type &&
+          step.parameter_value !== undefined &&
+          step.parameter_value !== ""
+        ) {
           switch (step.parameter_type) {
             case "time":
               baseStep.time = Number(step.parameter_value);
@@ -149,7 +155,7 @@ export default function RecipePage() {
         return baseStep;
       });
 
-      console.log('🚀 Formatted steps to send:', formattedSteps);
+      console.log("🚀 Formatted steps to send:", formattedSteps);
 
       if (editingRecipe) {
         await apiClient.put(`/recipes/${editingRecipe.id}`, {
@@ -216,7 +222,12 @@ export default function RecipePage() {
     const newSteps = [...steps];
     // @ts-ignore
     newSteps[index] = { ...newSteps[index], [field]: value };
-    console.log(`✏️ Step ${index} changed - ${field}:`, value, '| Full step:', newSteps[index]);
+    console.log(
+      `✏️ Step ${index} changed - ${field}:`,
+      value,
+      "| Full step:",
+      newSteps[index]
+    );
     setSteps(newSteps);
   };
 
@@ -237,7 +248,7 @@ export default function RecipePage() {
         ? fullRecipe.steps
         : [];
 
-      console.log('📥 Recipe steps from backend:', recipeSteps);
+      console.log("📥 Recipe steps from backend:", recipeSteps);
 
       // Convert backend format to UI format
       const convertedSteps = recipeSteps.map((step) => {
@@ -252,7 +263,7 @@ export default function RecipePage() {
           converted.parameter_type = "mix";
           converted.parameter_value = true;
           converted.mix_duration = step.time || "";
-        } 
+        }
         // Stove takes priority (explicit on/off)
         else if (step.stove_on === true) {
           converted.parameter_type = "stove";
@@ -263,17 +274,21 @@ export default function RecipePage() {
         else if (step.weight !== undefined && step.weight > 0) {
           converted.parameter_type = "weight";
           converted.parameter_value = step.weight;
-        } 
-        else if (step.temperature !== undefined && step.temperature > 0) {
+        } else if (step.temperature !== undefined && step.temperature > 0) {
           converted.parameter_type = "temperature";
           converted.parameter_value = step.temperature;
-        } 
-        else if (step.time !== undefined && step.time > 0) {
+        } else if (step.time !== undefined && step.time > 0) {
           converted.parameter_type = "time";
           converted.parameter_value = step.time;
         }
         // Last resort: stove off (if explicitly set and nothing else)
-        else if (step.stove_on === false && step.temperature === 0 && step.weight === 0 && step.time === 0 && !step.motor) {
+        else if (
+          step.stove_on === false &&
+          step.temperature === 0 &&
+          step.weight === 0 &&
+          step.time === 0 &&
+          !step.motor
+        ) {
           converted.parameter_type = "stove";
           converted.parameter_value = false;
         }
@@ -287,7 +302,7 @@ export default function RecipePage() {
         return converted;
       });
 
-      console.log('🔄 Converted steps for UI:', convertedSteps);
+      console.log("🔄 Converted steps for UI:", convertedSteps);
 
       setSteps(
         convertedSteps.length > 0
@@ -389,25 +404,27 @@ export default function RecipePage() {
             },
           }}
         />
-        <Button
-          variant="outlined"
-          startIcon={<AddIcon />}
-          onClick={() => setOpenDialog(true)}
-          sx={{
-            borderRadius: 3,
-            px: 3,
-            borderWidth: 1,
-            borderColor: "divider",
-            color: "text.primary",
-            "&:hover": {
+        {isAuthenticated && (
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenDialog(true)}
+            sx={{
+              borderRadius: 3,
+              px: 3,
               borderWidth: 1,
-              borderColor: "primary.main",
-              bgcolor: "transparent",
-            },
-          }}
-        >
-          Create New
-        </Button>
+              borderColor: "divider",
+              color: "text.primary",
+              "&:hover": {
+                borderWidth: 1,
+                borderColor: "primary.main",
+                bgcolor: "transparent",
+              },
+            }}
+          >
+            Create New
+          </Button>
+        )}
       </Box>
 
       {/* Grid */}
@@ -436,6 +453,7 @@ export default function RecipePage() {
                       recipe={recipe}
                       onDelete={handleDeleteClick}
                       onEdit={handleEdit}
+                      isAuthenticated={isAuthenticated}
                     />
                   </Box>
                 </Fade>
@@ -568,7 +586,11 @@ export default function RecipePage() {
                         ...newSteps[index],
                         parameter_type: newType,
                         parameter_value:
-                          newType === "mix" ? true : newType === "stove" ? false : "",
+                          newType === "mix"
+                            ? true
+                            : newType === "stove"
+                            ? false
+                            : "",
                         mix_duration: "",
                         stove_duration: "",
                       };

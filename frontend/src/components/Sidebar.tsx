@@ -40,7 +40,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isGuest } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
   const collapsedWidth = 80;
@@ -192,49 +192,109 @@ export default function Sidebar({
         <Divider sx={{ mb: 2 }} />
         {!collapsed ? (
           <Stack spacing={2}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Avatar sx={{ width: 40, height: 40, bgcolor: "primary.main" }}>
-                <AccountCircleIcon />
-              </Avatar>
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="subtitle2" fontWeight={600}>
-                  {user?.username}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {user?.role === "admin" ? "Administrator" : "User"}
-                </Typography>
-              </Box>
-            </Stack>
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<LogoutIcon />}
-              onClick={handleLogout}
-              sx={{
-                py: 1,
-                borderColor: "divider",
-                color: "text.primary",
-                "&:hover": {
-                  borderColor: "primary.main",
-                  bgcolor: "transparent",
-                },
-              }}
-            >
-              Logout
-            </Button>
+            {isGuest ? (
+              <>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Avatar sx={{ width: 40, height: 40, bgcolor: "grey.500" }}>
+                    <AccountCircleIcon />
+                  </Avatar>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle2" fontWeight={600}>
+                      Guest
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Read-only access
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  startIcon={<AccountCircleIcon />}
+                  onClick={() => navigate("/signin")}
+                  sx={{
+                    py: 1,
+                    bgcolor: "primary.main",
+                    color: "background.default",
+                    "&:hover": {
+                      bgcolor: "primary.dark",
+                    },
+                  }}
+                >
+                  Login
+                </Button>
+              </>
+            ) : (
+              <>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Avatar
+                    sx={{ width: 40, height: 40, bgcolor: "primary.main" }}
+                  >
+                    <AccountCircleIcon />
+                  </Avatar>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle2" fontWeight={600}>
+                      {user?.username}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {user?.role === "admin" ? "Administrator" : "User"}
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<LogoutIcon />}
+                  onClick={handleLogout}
+                  sx={{
+                    py: 1,
+                    borderColor: "divider",
+                    color: "text.primary",
+                    "&:hover": {
+                      borderColor: "primary.main",
+                      bgcolor: "transparent",
+                    },
+                  }}
+                >
+                  Logout
+                </Button>
+              </>
+            )}
           </Stack>
         ) : (
           <Stack spacing={2} alignItems="center">
-            <Tooltip title={user?.username || ""} placement="right">
-              <Avatar sx={{ width: 40, height: 40, bgcolor: "primary.main" }}>
-                <AccountCircleIcon />
-              </Avatar>
-            </Tooltip>
-            <Tooltip title="Logout" placement="right">
-              <IconButton onClick={handleLogout} color="primary">
-                <LogoutIcon />
-              </IconButton>
-            </Tooltip>
+            {isGuest ? (
+              <>
+                <Tooltip title="Guest" placement="right">
+                  <Avatar sx={{ width: 40, height: 40, bgcolor: "grey.500" }}>
+                    <AccountCircleIcon />
+                  </Avatar>
+                </Tooltip>
+                <Tooltip title="Login" placement="right">
+                  <IconButton
+                    onClick={() => navigate("/signin")}
+                    color="primary"
+                  >
+                    <AccountCircleIcon />
+                  </IconButton>
+                </Tooltip>
+              </>
+            ) : (
+              <>
+                <Tooltip title={user?.username || ""} placement="right">
+                  <Avatar
+                    sx={{ width: 40, height: 40, bgcolor: "primary.main" }}
+                  >
+                    <AccountCircleIcon />
+                  </Avatar>
+                </Tooltip>
+                <Tooltip title="Logout" placement="right">
+                  <IconButton onClick={handleLogout} color="primary">
+                    <LogoutIcon />
+                  </IconButton>
+                </Tooltip>
+              </>
+            )}
           </Stack>
         )}
       </Box>

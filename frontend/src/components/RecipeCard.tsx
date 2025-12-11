@@ -47,12 +47,14 @@ interface RecipeCardProps {
   recipe: Recipe;
   onDelete: (recipeId: string) => void;
   onEdit: (recipe: Recipe) => void;
+  isAuthenticated?: boolean;
 }
 
 export default function RecipeCard({
   recipe,
   onDelete,
   onEdit,
+  isAuthenticated = true,
 }: RecipeCardProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -164,31 +166,33 @@ export default function RecipeCard({
             </Typography>
           </Box>
 
-          <Stack direction="row" spacing={1}>
-            <IconButton
-              size="small"
-              onClick={handleEdit}
-              sx={{
-                border: "1px solid",
-                borderColor: "divider",
-                "&:hover": { borderColor: "primary.main" },
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              size="small"
-              onClick={handleDelete}
-              sx={{
-                border: "1px solid",
-                borderColor: "divider",
-                color: "error.main",
-                "&:hover": { borderColor: "error.main" },
-              }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Stack>
+          {isAuthenticated && (
+            <Stack direction="row" spacing={1}>
+              <IconButton
+                size="small"
+                onClick={handleEdit}
+                sx={{
+                  border: "1px solid",
+                  borderColor: "divider",
+                  "&:hover": { borderColor: "primary.main" },
+                }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+              <IconButton
+                size="small"
+                onClick={handleDelete}
+                sx={{
+                  border: "1px solid",
+                  borderColor: "divider",
+                  color: "error.main",
+                  "&:hover": { borderColor: "error.main" },
+                }}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Stack>
+          )}
         </CardContent>
       </Card>
 

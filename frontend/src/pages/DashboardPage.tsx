@@ -29,6 +29,7 @@ import {
 } from "recharts";
 import apiClient from "../utils/apiClient";
 import { useToast } from "../contexts/ToastContext";
+import { useAuth } from "../contexts/AuthContext";
 import {
   useDashboardStats,
   useRecipeUsage,
@@ -40,6 +41,7 @@ const COLORS = ["#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
 
 export default function DashboardPage() {
   const { showToast } = useToast();
+  const { isAuthenticated } = useAuth();
   const [sendingMenu, setSendingMenu] = useState(false);
 
   const {
@@ -151,7 +153,16 @@ export default function DashboardPage() {
 
   return (
     <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
-      <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+      <Box
+        sx={{
+          mb: 4,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 2,
+        }}
+      >
         <Typography
           variant="h1"
           sx={{
@@ -161,30 +172,43 @@ export default function DashboardPage() {
         >
           Kitchen Dashboard.
         </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={
-            sendingMenu ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              <SendIcon />
-            )
-          }
-          onClick={handleSendMenuToMQTT}
-          disabled={sendingMenu}
-          sx={{
-            px: 3,
-            py: 1.5,
-            fontSize: "16px",
-            fontWeight: "bold",
-          }}
-        >
-          {sendingMenu ? "Sending..." : "Send Menu"}
-        </Button>
+        {isAuthenticated && (
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={
+              sendingMenu ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                <SendIcon />
+              )
+            }
+            onClick={handleSendMenuToMQTT}
+            disabled={sendingMenu}
+            sx={{
+              px: 3,
+              py: 1.5,
+              fontSize: "16px",
+              fontWeight: "bold",
+            }}
+          >
+            {sendingMenu ? "Sending..." : "Send Menu"}
+          </Button>
+        )}
       </Box>
 
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, 1fr)" }, gap: 2, mb: 3 }}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "repeat(2, 1fr)",
+            md: "repeat(4, 1fr)",
+          },
+          gap: 2,
+          mb: 3,
+        }}
+      >
         <StatCard
           title="Total Recipes"
           value={stats.totalRecipes}
@@ -211,7 +235,14 @@ export default function DashboardPage() {
         />
       </Box>
 
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "repeat(2, 1fr)" }, gap: 3, mb: 3 }}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", lg: "repeat(2, 1fr)" },
+          gap: 3,
+          mb: 3,
+        }}
+      >
         <Card
           elevation={0}
           sx={{
@@ -224,8 +255,12 @@ export default function DashboardPage() {
             title="Most Used Recipes"
             subheader="Recipe execution frequency this month"
             sx={{
-              "& .MuiCardHeader-title": { fontSize: { xs: "1.1rem", sm: "1.25rem" } },
-              "& .MuiCardHeader-subheader": { fontSize: { xs: "0.75rem", sm: "0.875rem" } }
+              "& .MuiCardHeader-title": {
+                fontSize: { xs: "1.1rem", sm: "1.25rem" },
+              },
+              "& .MuiCardHeader-subheader": {
+                fontSize: { xs: "0.75rem", sm: "0.875rem" },
+              },
             }}
           />
           <CardContent>
@@ -236,13 +271,19 @@ export default function DashboardPage() {
                 alignItems="center"
                 height={250}
               >
-                <Typography color="textSecondary" sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}>
+                <Typography
+                  color="textSecondary"
+                  sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
+                >
                   No recipe usage data available
                 </Typography>
               </Box>
             ) : (
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={recipeUsageData} margin={{ bottom: 60, left: -20, right: 10 }}>
+                <BarChart
+                  data={recipeUsageData}
+                  margin={{ bottom: 60, left: -20, right: 10 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis
                     dataKey="name"
@@ -251,7 +292,9 @@ export default function DashboardPage() {
                     height={60}
                     fontSize={9}
                     interval={0}
-                    tickFormatter={(value) => value.length > 15 ? value.substring(0, 15) + '...' : value}
+                    tickFormatter={(value) =>
+                      value.length > 15 ? value.substring(0, 15) + "..." : value
+                    }
                   />
                   <YAxis fontSize={9} width={40} />
                   <Tooltip />
@@ -274,8 +317,12 @@ export default function DashboardPage() {
             title="Device Status"
             subheader="Current device distribution"
             sx={{
-              "& .MuiCardHeader-title": { fontSize: { xs: "1.1rem", sm: "1.25rem" } },
-              "& .MuiCardHeader-subheader": { fontSize: { xs: "0.75rem", sm: "0.875rem" } }
+              "& .MuiCardHeader-title": {
+                fontSize: { xs: "1.1rem", sm: "1.25rem" },
+              },
+              "& .MuiCardHeader-subheader": {
+                fontSize: { xs: "0.75rem", sm: "0.875rem" },
+              },
             }}
           />
           <CardContent>
@@ -286,7 +333,10 @@ export default function DashboardPage() {
                 alignItems="center"
                 height={250}
               >
-                <Typography color="textSecondary" sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}>
+                <Typography
+                  color="textSecondary"
+                  sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
+                >
                   No cooking status data available
                 </Typography>
               </Box>
@@ -333,7 +383,7 @@ export default function DashboardPage() {
                       sx={{
                         backgroundColor: COLORS[index % COLORS.length],
                         color: "white",
-                        fontSize: { xs: "0.7rem", sm: "0.8125rem" }
+                        fontSize: { xs: "0.7rem", sm: "0.8125rem" },
                       }}
                     />
                   ))}
@@ -357,8 +407,12 @@ export default function DashboardPage() {
             title="Weekly Activity"
             subheader="Daily recipe completions"
             sx={{
-              "& .MuiCardHeader-title": { fontSize: { xs: "1.1rem", sm: "1.25rem" } },
-              "& .MuiCardHeader-subheader": { fontSize: { xs: "0.75rem", sm: "0.875rem" } }
+              "& .MuiCardHeader-title": {
+                fontSize: { xs: "1.1rem", sm: "1.25rem" },
+              },
+              "& .MuiCardHeader-subheader": {
+                fontSize: { xs: "0.75rem", sm: "0.875rem" },
+              },
             }}
           />
           <CardContent>
@@ -369,16 +423,22 @@ export default function DashboardPage() {
                 alignItems="center"
                 height={250}
               >
-                <Typography color="textSecondary" sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}>
+                <Typography
+                  color="textSecondary"
+                  sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
+                >
                   No daily activity data available
                 </Typography>
               </Box>
             ) : (
               <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={dailyActivityData} margin={{ left: -20, right: 10 }}>
+                <LineChart
+                  data={dailyActivityData}
+                  margin={{ left: -20, right: 10 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="day" 
+                  <XAxis
+                    dataKey="day"
                     fontSize={9}
                     interval={0}
                     angle={-45}

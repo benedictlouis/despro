@@ -5,6 +5,7 @@ const healthController = require("../controllers/healthController");
 const userController = require("../controllers/userController");
 const espDeviceController = require("../controllers/espDeviceController");
 const authenticate = require("../middleware/authenticate");
+const optionalAuth = require("../middleware/optionalAuth");
 const adminOnly = require("../middleware/adminOnly");
 
 const setupRoutes = (app) => {
@@ -33,18 +34,31 @@ const setupRoutes = (app) => {
     userController.deleteUser.bind(userController)
   );
 
-  // Recipe routes
+  // Recipe routes - Public read, authenticated write
   app.get("/recipes", recipeController.getAllRecipes.bind(recipeController));
   app.get("/recipe/:id", recipeController.getRecipeById.bind(recipeController));
-  app.post("/recipes", recipeController.createRecipe.bind(recipeController));
+  app.post(
+    "/recipes",
+    authenticate,
+    recipeController.createRecipe.bind(recipeController)
+  );
   app.delete(
     "/recipes/:id",
+    authenticate,
     recipeController.deleteRecipe.bind(recipeController)
   );
-  app.put("/recipes/:id", recipeController.updateRecipe.bind(recipeController));
+  app.put(
+    "/recipes/:id",
+    authenticate,
+    recipeController.updateRecipe.bind(recipeController)
+  );
 
-  // MQTT routes
-  app.post("/send-menu", mqttController.sendMenu.bind(mqttController));
+  // MQTT routes - Require authentication
+  app.post(
+    "/send-menu",
+    authenticate,
+    mqttController.sendMenu.bind(mqttController)
+  );
 
   // ESP Device routes
   app.get(
@@ -81,6 +95,7 @@ const setupRoutes = (app) => {
   // Health check
   app.get("/health", healthController.getHealth.bind(healthController));
 
+  // Duplicate /api routes for compatibility
   app.get(
     "/api/recipes",
     recipeController.getAllRecipes.bind(recipeController)
@@ -91,9 +106,14 @@ const setupRoutes = (app) => {
   );
   app.post(
     "/api/recipes",
+    authenticate,
     recipeController.createRecipe.bind(recipeController)
   );
-  app.post("/api/mqtt/send-menu", mqttController.sendMenu.bind(mqttController));
+  app.post(
+    "/api/mqtt/send-menu",
+    authenticate,
+    mqttController.sendMenu.bind(mqttController)
+  );
   app.get("/api/health", healthController.getHealth.bind(healthController));
 };
 
