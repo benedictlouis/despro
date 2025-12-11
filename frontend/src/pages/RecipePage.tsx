@@ -31,6 +31,7 @@ interface RecipeStep {
   parameter_type?: string;
   parameter_value?: number | string | boolean;
   mix_duration?: number | string;
+  stove_duration?: number | string;
   time?: number;
   ingredient?: string;
   temperature?: number;
@@ -60,6 +61,7 @@ export default function RecipePage() {
       parameter_type: "",
       parameter_value: 0,
       mix_duration: "",
+      stove_on: false,
     },
   ]);
 
@@ -86,6 +88,8 @@ export default function RecipePage() {
     }
   };
 
+
+
   // --- ORIGINAL LOGIC RESTORED ---
   useEffect(() => {
     fetchRecipes();
@@ -109,7 +113,10 @@ export default function RecipePage() {
       
       // Convert parameter_type and parameter_value back to original format
       const formattedSteps = steps.map((step) => {
-        const baseStep: any = { action: step.action };
+        const baseStep: any = { 
+          action: step.action,
+          stove_on: step.stove_on ?? false // Always include stove_on
+        };
 
         if (step.parameter_type && step.parameter_value !== undefined && step.parameter_value !== "") {
           switch (step.parameter_type) {
@@ -118,12 +125,17 @@ export default function RecipePage() {
               break;
             case "temperature":
               baseStep.temperature = Number(step.parameter_value);
+              // Auto-enable stove when setting temperature
+              baseStep.stove_on = true;
               break;
             case "weight":
               baseStep.weight = Number(step.parameter_value);
               break;
             case "stove":
               baseStep.stove_on = step.parameter_value === true;
+              if (step.stove_duration) {
+                baseStep.time = Number(step.stove_duration);
+              }
               break;
             case "mix":
               baseStep.motor = step.parameter_value === true;
@@ -161,6 +173,7 @@ export default function RecipePage() {
           parameter_type: "",
           parameter_value: 0,
           mix_duration: "",
+          stove_on: false,
         },
       ]);
       setEditingRecipe(null);
@@ -174,6 +187,9 @@ export default function RecipePage() {
   };
 
   const handleAddStep = () => {
+    // Get previous step's stove_on state, default to false if first step
+    const prevStoveState = steps.length > 0 ? steps[steps.length - 1].stove_on ?? false : false;
+    
     setSteps([
       ...steps,
       {
@@ -181,6 +197,7 @@ export default function RecipePage() {
         parameter_type: "",
         parameter_value: 0,
         mix_duration: "",
+        stove_on: prevStoveState, // Inherit from previous step
       },
     ]);
   };
@@ -224,7 +241,10 @@ export default function RecipePage() {
 
       // Convert backend format to UI format
       const convertedSteps = recipeSteps.map((step) => {
-        const converted: RecipeStep = { action: step.action || "" };
+        const converted: RecipeStep = { 
+          action: step.action || "",
+          stove_on: step.stove_on ?? false // Always preserve stove_on state
+        };
 
         // Priority-based detection: check which field has meaningful value
         // Motor takes priority (even if motor=true with time=0)
@@ -237,6 +257,7 @@ export default function RecipePage() {
         else if (step.stove_on === true) {
           converted.parameter_type = "stove";
           converted.parameter_value = true;
+          converted.stove_duration = step.time || "";
         }
         // Check for non-zero values in order of priority
         else if (step.weight !== undefined && step.weight > 0) {
@@ -316,6 +337,7 @@ export default function RecipePage() {
         parameter_type: "",
         parameter_value: 0,
         mix_duration: "",
+        stove_on: false,
       },
     ]);
     setEditingRecipe(null);
@@ -516,6 +538,22 @@ export default function RecipePage() {
                     placeholder="e.g., Add water, Mix ingredients, Turn on stove..."
                   />
                 </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    select
+                    label="Stove State"
+                    fullWidth
+                    size="small"
+                    value={step.stove_on === true ? "on" : "off"}
+                    onChange={(e) =>
+                      handleStepChange(index, "stove_on", e.target.value === "on")
+                    }
+                    helperText="Set whether stove should be ON or OFF for this step"
+                  >
+                    <MenuItem value="off">OFF</MenuItem>
+                    <MenuItem value="on">ON</MenuItem>
+                  </TextField>
+                </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     select
@@ -532,6 +570,7 @@ export default function RecipePage() {
                         parameter_value:
                           newType === "mix" ? true : newType === "stove" ? false : "",
                         mix_duration: "",
+                        stove_duration: "",
                       };
                       setSteps(newSteps);
                     }}
@@ -601,6 +640,20 @@ export default function RecipePage() {
                       placeholder="Enter duration in seconds"
                       onChange={(e) =>
                         handleStepChange(index, "mix_duration", e.target.value)
+                      }
+                    />
+                  </Grid>
+                )}
+                {step.parameter_type === "stove" && (
+                  <Grid size={{ xs: 12 }}>
+                    <TextField
+                      label="Stove Duration (seconds)"
+                      fullWidth
+                      size="small"
+                      value={step.stove_duration ?? ""}
+                      placeholder="Enter duration in seconds (optional)"
+                      onChange={(e) =>
+                        handleStepChange(index, "stove_duration", e.target.value)
                       }
                     />
                   </Grid>
